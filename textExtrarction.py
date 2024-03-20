@@ -94,6 +94,22 @@ def get_country_dict(country_df):
     return country_dict, country_list
 
 
+
+
+brand_df = pd.read_csv("brand_conversion_table.csv")
+brand_dict = get_brand_dict(brand_df)
+brand_list = get_brand_list(brand_dict)
+
+origin_list = get_origin_list()
+
+product_df = pd.read_csv("Product_conversion_table.csv")
+product_dict, product_list = get_product_dict(product_df)
+
+grade_df = pd.read_csv("grade_conversion.csv")
+grade_dict, grade_list = get_grade_dict(grade_df)
+
+country_df = pd.read_csv("country_conversion.csv")
+country_dict, country_list = get_country_dict(country_df)
 ##-------------------------------------------  GET COLUMNS --------------------------------------------------------------------------------------------------------------------------##
 
 
