@@ -93,7 +93,23 @@ def get_country_dict(country_df):
             print(key)
     return country_dict, country_list
 
-
+## warehouse
+def get_warehouse_dict(warehouse_df):
+    warehouse_df = warehouse_df.applymap(lambda x: x.lower() if isinstance(x, str) else x)
+    warehouse_df = warehouse_df.T
+    new_columns = warehouse_df.iloc[0]
+    df_new = warehouse_df[1:].reset_index(drop=True)
+    df_new.columns = new_columns
+    result_dict = df_new.to_dict('list')
+    warehouse_dict = {k: [i for i in v if type(i) != float] for k, v in result_dict.items()}
+    warehouse_list = []
+    for key, values in warehouse_dict.items():
+        warehouse_list.append(key)
+        try:
+            warehouse_list.extend(values)
+        except:
+            print(key)
+    return warehouse_dict, warehouse_list
 
 
 brand_df = pd.read_csv("brand_conversion_table.csv")
@@ -110,6 +126,9 @@ grade_dict, grade_list = get_grade_dict(grade_df)
 
 country_df = pd.read_csv("country_conversion.csv")
 country_dict, country_list = get_country_dict(country_df)
+
+warehouse_df = pd.read_csv("warehouse_conversion.csv")
+warehouse_dict, warehouse_list = get_warehouse_dict(warehouse_df)
 ##-------------------------------------------  GET COLUMNS --------------------------------------------------------------------------------------------------------------------------##
 
 
@@ -124,6 +143,13 @@ def get_brand(row, brand_list):
         if brand_item in row['貨名']:
             parts = row['貨名'].split(brand_item, 1)
             return brand_item
+    return None
+
+def get_warehouse(row, warehouse_list):
+    for warehouse_item in warehouse_list:
+        if warehouse_item in row['倉位']:
+            parts = row['倉位'].split(warehouse_item, 1)
+            return warehouse_item
     return None
 
 def get_name(row, brand, product_list):
@@ -169,6 +195,7 @@ def get_supplier(row):
 
 df_cleaned['Origin'] = df_cleaned.apply(lambda row: get_origin(row, origin_list), axis=1)
 df_cleaned['brand'] = df_cleaned.apply(lambda row: get_brand(row, brand_list), axis=1)
+df_cleaned['倉位'] = df_cleaned.apply(lambda row: get_warehouse(row, warehouse_list), axis=1)
 df_cleaned['name'] = df_cleaned.apply(lambda row: get_name(row, row['brand'], product_list), axis=1)
 df_cleaned['grade'] = df_cleaned.apply(lambda row: get_grade(row, grade_list), axis=1)
 df_cleaned["grade"] = df_cleaned["grade"].str.replace("choice,ch", "choice")
