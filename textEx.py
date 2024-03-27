@@ -4,7 +4,7 @@ import os
 import re
 
 
-def readData(targetTable :str,method:str) -> dict:
+def _readData(targetTable :str,method:str) -> dict:
     
     if method == "LOCAL":
         dir = os.getcwd() + "/conversion_table/"
@@ -41,22 +41,22 @@ def readData(targetTable :str,method:str) -> dict:
 
     return 
 
-def compareString(stringValue:str, textlist:list)-> str:
+def _compareString(stringValue:str, textlist:list)-> str:
     for text in textlist:
         if str(text) in str(stringValue) :
             return True
     return False
 
-def match(concatText:str, dataDict:dict,) -> str:
+def _match(concatText:str, dataDict:dict,) -> str:
     for key, value in dataDict.items():
-        if compareString(concatText,list(value)) or key in concatText:
+        if _compareString(concatText,list(value)) or key in concatText:
             return key
     return None
 
-def matchList(concatText:str, dataDict:dict,) -> list:
+def _matchList(concatText:str, dataDict:dict,) -> list:
     returnList = []
     for key, value in dataDict.items():
-        if compareString(concatText,list(value)) or (key in concatText):
+        if _compareString(concatText,list(value)) or (key in concatText):
             returnList.append(key)
             
     return returnList
@@ -65,43 +65,43 @@ def matchList(concatText:str, dataDict:dict,) -> list:
 def getBrand(concatText:str) -> str :
     # this function return the strandard brand name 
     standardName = ""
-    brandDict = readData("BRAND","LOCAL")
-    standardName = match(concatText,brandDict)
+    brandDict = _readData("BRAND","LOCAL")
+    standardName = _match(concatText,brandDict)
 
     if standardName == "":
-        print("no match is found")
+        print("no _match is found")
     
     return standardName
 
 def getCountry(concatText:str) -> str :
     standardCountry = ""
-    CountryDict = readData("COUNTRY","LOCAL")
-    standardCountry = match(concatText,CountryDict)
+    CountryDict = _readData("COUNTRY","LOCAL")
+    standardCountry = _match(concatText,CountryDict)
 
     if standardCountry == "":
-        print("no match is found")
+        print("no _match is found")
     return standardCountry
 
 def getSpec(concatText:str) -> list:
     standardSpec = []
-    specDict = readData("SPEC","LOCAL")
-    standardSpec = matchList(concatText,specDict)
+    specDict = _readData("SPEC","LOCAL")
+    standardSpec = _matchList(concatText,specDict)
     if not standardSpec:
-        print("no match is found")
+        print("no _match is found")
     return standardSpec
 
 def getProduct(concatText:str) -> str:
     standardProduct = ""
-    productDict = readData("PRODUCT","LOCAL")
-    standardProduct = matchList(concatText, productDict)
+    productDict = _readData("PRODUCT","LOCAL")
+    standardProduct = _matchList(concatText, productDict)
     if standardProduct == "":
-        print("no match is found")
+        print("no _match is found")
     return standardProduct
 
 def getWarehoue(concatText:str) -> list:
     standardWarehoue = []
-    warehouseDict = readData("WAREHOUSE","LOCAL")
-    standardWarehoue = matchList(concatText,warehouseDict)
+    warehouseDict = _readData("WAREHOUSE","LOCAL")
+    standardWarehoue = _matchList(concatText,warehouseDict)
     if not standardWarehoue:
-        print("no match is found")
+        print("no _match is found")
     return standardWarehoue
