@@ -1,6 +1,11 @@
 import mysql.connector
 from mysql.connector import Error
 import pandas as pd
+import os
+from tqdm import tqdm
+from concurrent.futures import ThreadPoolExecutor
+from sqlalchemy import create_engine
+
 
 def create_table(connection):
     try:
@@ -117,3 +122,11 @@ def query_data_dataframe(connection, query):
         if connection.is_connected():
             cursor.close()
 
+def dataframe_to_db(df, connection):
+    #this function reads a df of formatted data and updates to df
+    for index, row in tqdm(df.iterrows(), total=df.shape[0], desc="Inserting rows"):
+        product_details = tuple(row)  # Convert the DataFrame row to a tuple
+        insert_product(connection, product_details)
+
+
+     
