@@ -104,7 +104,6 @@ def query_data(connection, query):
         if connection.is_connected():
             cursor.close()
 
-
 def query_data_dataframe(connection, query):
     try:
         cursor = connection.cursor()
@@ -127,6 +126,11 @@ def dataframe_to_db(df, connection):
     for index, row in tqdm(df.iterrows(), total=df.shape[0], desc="Inserting rows"):
         product_details = tuple(row)  # Convert the DataFrame row to a tuple
         insert_product(connection, product_details)
+
+def df_tosql(df):
+    connection_string = f"mysql+mysqlconnector://admin:admin123@quote.c9ac6sewqau0.ap-southeast-2.rds.amazonaws.com/quote"
+    engine = create_engine(connection_string)
+    df.to_sql('Tradeasy_quotation', con=engine, if_exists='replace', index=False, chunksize=500)
 
 
      
