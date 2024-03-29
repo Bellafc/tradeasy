@@ -196,10 +196,10 @@ def getWeightUnit(concatText:str) -> str:
     # If a match is found, `weightUnit` is set to the matching unit; otherwise, a message is printed indicating no match was found.
     # Finally, the found weight unit (or an empty string if no match is found) is returned.
 
-    weightUnit = ""
+    weightUnit = []
     weightUnitDict = _readData("WEIGHTUNIT","LOCAL")
-    weightUnit = _match(concatText,weightUnitDict)
-    if weightUnit == "":
+    weightUnit = _matchList(concatText,weightUnitDict)
+    if not weightUnit :
         print("no _match is found")
-    return weightUnit
+    return weightUnit[-1]
 
