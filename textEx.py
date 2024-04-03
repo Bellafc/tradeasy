@@ -22,7 +22,7 @@ def _readData(targetTable :str,method:str) -> dict:
             case "SUPPLIER":
                 dir = dir + "supplier_conversion.csv"
             case "CATEGORY":
-                dir = dir + "category_conversion.csv"
+                dir = dir + "product_conversion.csv"
             case "PACKING":
                 dir = dir + "packing_conversion.csv"
             case "WEIGHTUNIT":
@@ -35,6 +35,7 @@ def _readData(targetTable :str,method:str) -> dict:
             #product is a special case. There is a "category" column which affects the algorithm 
             df = df.drop(["category"], axis=1)
         elif targetTable == "CATEGORY":
+            df = df[['category', 'Standard_product']]
             category_dict = df.groupby('category')['Standard_product'].apply(list).to_dict()
             return category_dict
         
@@ -52,23 +53,25 @@ def _readData(targetTable :str,method:str) -> dict:
 
     return 
 
-def _compareString(stringValue:str, textlist:list)-> str:
+def _compareString(stringValue: str, textlist: list) -> bool:
     stringValueLower = stringValue.lower()  # Convert stringValue to lowercase
     for text in textlist:
         if str(text).lower() in stringValueLower:  # Convert text to lowercase and compare
             return True
     return False
 
-def _match(concatText:str, dataDict:dict,) -> str:
+def _match(concatText: str, dataDict: dict) -> str:
+    concatTextLower = concatText.lower()  # Convert concatText to lowercase for case-insensitive comparison
     for key, value in dataDict.items():
-        if _compareString(concatText,list(value)) or key in concatText:
+        if _compareString(concatTextLower, list(value)) or key.lower() in concatTextLower:
             return key
     return None
 
-def _matchList(concatText:str, dataDict:dict,) -> list:
+def _matchList(concatText: str, dataDict: dict) -> list:
     returnList = []
+    concatTextLower = concatText.lower()  # Convert concatText to lowercase for case-insensitive comparison
     for key, value in dataDict.items():
-        if _compareString(concatText,list(value)) or (key in concatText):
+        if _compareString(concatTextLower, list(value)) or (key.lower() in concatTextLower):
             returnList.append(key)
             
     return returnList
@@ -81,7 +84,10 @@ def getBrand(concatText:str) -> str :
     standardName = _match(concatText,brandDict)
 
     if standardName == "":
-        print("no _match is found")
+        print("no _match is found :" + concatText)
+    
+    if standardName is not None:
+        return standardName.upper()
     
     return standardName
 
@@ -91,7 +97,7 @@ def getCountry(concatText:str) -> str :
     standardCountry = _match(concatText,CountryDict)
 
     if standardCountry == "":
-        print("no _match is found")
+        print("no _match is found :" + concatText)
     return standardCountry
 
 def getSpec(concatText:str) -> list:
@@ -100,7 +106,7 @@ def getSpec(concatText:str) -> list:
     standardSpec = _matchList(concatText,specDict)
     if not standardSpec:
         print("no _match is found")
-    return standardSpec
+    return [s.upper() if isinstance(s, str) else s for s in standardSpec]
 
 def getProduct(concatText:str) -> str:
     standardProduct = ""
@@ -108,7 +114,11 @@ def getProduct(concatText:str) -> str:
     standardProduct = _match(concatText, productDict)
     if standardProduct == "":
         print("no _match is found")
-    return standardProduct
+    if standardProduct is not None:
+        return standardProduct.upper()
+
+    return ""
+    
 
 def getWarehoue(concatText:str) -> list:
     # Searches the given string `concatText` for warehouse names and returns a list of found names.
@@ -145,8 +155,10 @@ def getCategory(concatText:str) -> str:
     product = getProduct(concatText)
     if product != "":
         categoryDict = _readData("CATEGORY","LOCAL")
-        category = _match(concatText,categoryDict)
-        return category
+        category = _match(product,categoryDict)
+        if category is not None:
+            return category.upper()
+        
 
     return ""
 
@@ -165,26 +177,24 @@ def getPacking(concatText:str) ->str:
         print("no _match is found")
     return packing
 
-def getPrice(concatText:str) -> float:
-    # This function takes a single string argument named `concatText` and returns a floating-point number.
-    # It utilizes a regular expression (regex) to search the input text for price figures.
-    # The regex pattern is designed to identify numbers (with or without decimal points) that are immediately
-    # followed by specific markers or units such as '$', '/', 'KG', 'LB', '/KG', '/P', 'b', '/lb', '/磅', '/包', or '/k',
-    # ensuring a broad range of price formats can be recognized and extracted. These markers indicate currency symbols
-    # or units of measure but are not included in the match.
-    # If a price is found, the first matched number is converted to a float and returned.
-    # If no price information is detected, a message is printed to indicate no match was found, and 0.0 is returned.
-    # The primary use of this function is to efficiently extract numerical price information from strings that contain
-    # pricing data in various formats.
+def getPrice(concatText: str) -> float:
+    # Direct and simplified regex pattern focusing on capturing numeric values
+    # Optionally preceded by $ and followed by zero or more spaces and then units or the end of the string
+    pattern = r"\$?\s*(\d+(?:\.\d+)?)\s*(?:KG|LB|/KG|/P|b|/lb|/磅|/包|/k|\Z)?"
     
-    
-    pattern = r'(?:(?<=\$)\d+(?:\.\d+)?|\d+(?:\.\d+)?)(?:(?=/)|(?=KG)|(?=LB)|(?=/KG)|(?=/P)|(?=b)|(?=/lb)|(?=/磅)|(?=/包)|(?=/k))'
-    match = regex.findall(pattern, concatText)
-    if match:
-        return float(match[0])
-    else:
-        print("No match found.")
-        return 0.0
+    # Searching for all matches, considering case insensitivity for units
+    matches = re.findall(pattern, concatText, flags=re.IGNORECASE)
+
+    if matches:
+        # Assuming the first match is the relevant price
+        try:
+            return float(matches[0])
+        except ValueError:
+            print(f"Conversion issue with: '{concatText}', found: {matches[0]}")
+            return 0.0
+
+    print(f"No valid price found in: '{concatText}'")
+    return None
     
 
 def getWeightUnit(concatText:str) -> str:
