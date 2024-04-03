@@ -36,7 +36,24 @@ def _readData(targetTable :str,method:str) -> dict:
             df = df.drop(["category"], axis=1)
         elif targetTable == "CATEGORY":
             df = df[['category', 'Standard_product']]
+            categories_order = ['Wagyu'] + sorted(df['category'].unique().tolist())
+            categories_order.remove('Wagyu')
+            df['category'] = pd.Categorical(df['category'], categories=categories_order, ordered=True)
+            
+
+            # Group by 'category' and convert to dictionary
             category_dict = df.groupby('category')['Standard_product'].apply(list).to_dict()
+
+            if 'Wagyu' in category_dict:
+                wagyu_products = category_dict['Wagyu']
+                # Create a new dictionary with "Wagyu" first
+                new_category_dict = {'Wagyu': wagyu_products}
+                # Add the rest of the categories except "Wagyu"
+                for category, products in category_dict.items():
+                    if category != 'Wagyu':
+                        new_category_dict[category] = products
+                category_dict = new_category_dict
+                
             return category_dict
         
         df = df.map(lambda x: x.lower() if isinstance(x, str) else x).T    
