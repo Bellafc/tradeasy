@@ -8,27 +8,26 @@ def _readData(targetTable :str,method:str) -> dict:
     
     if method == "LOCAL":
         dir = os.getcwd() + "/conversion_table/"
-        match targetTable:
-            case "BRAND":
-                dir = dir + "brand_conversion.csv"
-            case "COUNTRY":
-                dir = dir + "country_conversion.csv"
-            case "SPEC":
-                dir = dir + "spec_conversion.csv"
-            case "PRODUCT":
-                dir = dir + "product_conversion.csv"
-            case "WAREHOUSE":
-                dir = dir + "warehouse_conversion.csv"
-            case "SUPPLIER":
-                dir = dir + "supplier_conversion.csv"
-            case "CATEGORY":
-                dir = dir + "product_conversion.csv"
-            case "PACKING":
-                dir = dir + "packing_conversion.csv"
-            case "WEIGHTUNIT":
-                dir = dir + "weightunit_conversion.csv"
-            case _:
-                raise TypeError("Undefined type : " + targetTable )
+        if targetTable == "BRAND":
+            dir += "brand_conversion.csv"
+        elif targetTable == "COUNTRY":
+            dir += "country_conversion.csv"
+        elif targetTable == "SPEC":
+            dir += "spec_conversion.csv"
+        elif targetTable == "PRODUCT":
+            dir += "product_conversion.csv"
+        elif targetTable == "WAREHOUSE":
+            dir += "warehouse_conversion.csv"
+        elif targetTable == "SUPPLIER":
+            dir += "supplier_conversion.csv"
+        elif targetTable == "CATEGORY":
+            dir += "product_conversion.csv"
+        elif targetTable == "PACKING":
+            dir += "packing_conversion.csv"
+        elif targetTable == "WEIGHTUNIT":
+            dir += "weightunit_conversion.csv"
+        else:
+            raise TypeError("Undefined type: " + targetTable)
 
         df = pd.read_csv(dir)
         if targetTable == "PRODUCT":
