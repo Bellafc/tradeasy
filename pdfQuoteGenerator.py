@@ -9,6 +9,8 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_TAB_ALIGNMENT
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn 
 from docx.enum.text import WD_ALIGN_PARAGRAPH
+from pylovepdf.ilovepdf import ILovePdf
+import shutil
 
 import os
 
@@ -282,9 +284,54 @@ def update_document_with_products(document, df, categoryList):
 
 def _convert_docx_to_pdf_pandoc(input_path, output_path):
     try:
-        subprocess.run(['pandoc', input_path, '-o', output_path], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        # Specify the full pandoc command with options
+        cmd = [
+            'pandoc', input_path,
+            '-o', output_path,
+            '--pdf-engine=xelatex',
+            '--template=mytemplate.latex',
+            '-V', 'mainfont=Noto Serif CJK TC',
+            '-V', 'documentclass=ctexart'
+        ]
+        
+        # Execute the pandoc command
+        result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+        
+        # If the command was successful, print this message
         print(f"Conversion successful: {output_path}")
+        
+        # Optionally, print stdout and stderr for debugging
+        print("STDOUT:", result.stdout)
+        print("STDERR:", result.stderr)
+        
     except subprocess.CalledProcessError as e:
+        # If an error occurred during conversion, print the error message
+        print(f"Error during conversion: {e}")
+        print("STDOUT:", e.stdout)
+        print("STDERR:", e.stderr)
+
+def _convert_and_rename_docx_to_pdf(api_key, input_path, desired_output_path):
+    try:
+        ilovepdf = ILovePdf(public_key=api_key, verify_ssl=True)
+        task = ilovepdf.new_task('officepdf')
+        task.add_file(input_path)
+        task.execute()
+
+        # Download the file. The download method now returns the name of the downloaded file.
+        downloaded_file_name = task.download()
+        
+        # Assuming the downloaded file name is just the name, not the path,
+        # and it's downloaded to the current working directory.
+        downloaded_file_path = os.path.join(os.getcwd(), downloaded_file_name)
+        
+        # Move the downloaded file to the desired output path
+        if os.path.exists(desired_output_path):
+            os.remove(desired_output_path)  # Remove if the target file already exists
+        shutil.move(downloaded_file_path, desired_output_path)
+
+        print(f"Conversion successful. PDF saved as: {desired_output_path}")
+        
+    except Exception as e:
         print(f"Error during conversion: {e}")
 
 def createQuotation(connection,effectiveDate:datetime,days: int = 2) -> str :
@@ -381,11 +428,13 @@ def createQuotation(connection,effectiveDate:datetime,days: int = 2) -> str :
         os.makedirs(static_dir)
 
     docx_file = os.path.join(static_dir, 'demo2.docx')
-    document.save(docx_file)
     pdf_file = os.path.join(static_dir, 'demo2.pdf')
 
-    _convert_docx_to_pdf_pandoc(docx_file, pdf_file)
+
+    api_key = 'project_public_dd58a2ab023f0c665dc5749a8f0931e0_Pl0dh0a277b8551bb9cdf01e043af64ce0304'
+
+    _convert_and_rename_docx_to_pdf(api_key, docx_file,pdf_file )
 
     # Return a path relative to the static directory
-    return "/static/pdfs/demo2.docx"
+    return "/static/pdfs/demo2.pdf"
 
