@@ -310,6 +310,22 @@ def _convert_docx_to_pdf_pandoc(input_path, output_path):
         print("STDOUT:", e.stdout)
         print("STDERR:", e.stderr)
 
+def _convert_to_pdf(input_file, output_dir):
+    command = [
+        "soffice",
+        "--headless",
+        "--convert-to",
+        "pdf",
+        "--outdir",
+        output_dir,
+        input_file
+    ]
+    try:
+        subprocess.run(command, check=True)
+        print("Conversion successful!")
+    except subprocess.CalledProcessError as e:
+        print("Conversion failed:", e)
+
 def _convert_and_rename_docx_to_pdf(api_key, input_path, desired_output_path):
     try:
         ilovepdf = ILovePdf(public_key=api_key, verify_ssl=True)
@@ -424,17 +440,20 @@ def createQuotation(connection,effectiveDate:datetime,days: int = 2) -> str :
     
 
     static_dir = os.path.join(os.getcwd(), 'static', 'pdfs')
+    
     if not os.path.exists(static_dir):
         os.makedirs(static_dir)
 
+    pdf_file = os.path.join(os.getcwd(), 'static')
+
     docx_file = os.path.join(static_dir, 'demo2.docx')
-    pdf_file = os.path.join(static_dir, 'demo2.pdf')
+    document.save(docx_file)
+    pdf_file = os.path.join(static_dir, 'demo')
 
+    #api_key = 'project_public_dd58a2ab023f0c665dc5749a8f0931e0_Pl0dh0a277b8551bb9cdf01e043af64ce0304'
 
-    api_key = 'project_public_dd58a2ab023f0c665dc5749a8f0931e0_Pl0dh0a277b8551bb9cdf01e043af64ce0304'
-
-    _convert_and_rename_docx_to_pdf(api_key, docx_file,pdf_file )
+    _convert_to_pdf(docx_file,pdf_file )
 
     # Return a path relative to the static directory
-    return "/static/pdfs/demo2.pdf"
+    return "/static/pdfs/demo"
 
