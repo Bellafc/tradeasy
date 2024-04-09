@@ -230,7 +230,7 @@ def receive_whatsapp_message():
         text = user_data[sender]['supplier'] + '\n'
         for product in products:
             print(product)
-            product_values = [str(val) if val is not None else "" for val in [product[4], product[5], product[6], product[2], product[8], product[9], product[10], product[14], product[15], product[16]]]
+            product_values = [str(val) if val is not None else "" for val in [product[4], product[5], product[6], product[1], product[8], product[9], product[10], product[14], product[15], product[16]]]
             text = text + ''.join(product_values) + '\n'
         #(productName, productTag, supplier, category, packing, origin, brand, effectiveDate, spec1, spec2, spec3, spec4, spec5, spec6, price, weightUnit, warehouse, notes)
         resp.message(text)
