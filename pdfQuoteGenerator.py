@@ -455,5 +455,5 @@ def createQuotation(connection,effectiveDate:datetime,days: int = 2) -> str :
     _convert_to_pdf(docx_file,pdf_file )
 
     # Return a path relative to the static directory
-    return "/static/pdfs/demo"
+    return "tradeasy/static/pdfs/demo"
 
