@@ -246,8 +246,20 @@ def receive_whatsapp_message():
         if len(products) !=0:
             user_data[sender]['product_detail'] = products
             recievedQuotation = True
-            user_states[sender] = 'awaiting_word_quotation_not_null'
-            return send_quotation_review(sender)
+
+            text = user_data[sender]['supplier'] + '\n'
+            for product in user_data[sender]['product_detail']:
+                product_values = [str(val) if val is not None else "" for val in [product[4], product[5], product[6], product[1], product[8], product[9], product[10], product[14], product[15], product[16]]]
+                text += ' '.join(product_values) + '\n'
+
+            # Update the state to await confirmation
+            user_states[sender] = 'awaiting_word_quotation_confirmation'
+
+            # Send the message
+            
+            msg.body("Please review the product details. Reply 'Y' to confirm, or 'N' if you discover any issues.\n" + text)
+
+
         else:
             msg.body("Sorry, please enter again")
 
