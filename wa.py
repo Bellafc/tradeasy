@@ -216,7 +216,6 @@ def receive_whatsapp_message():
         else:
             msg.body("Please specify '文字報價' or 'PDF報價'.")
     elif user_states[sender] == 'awaiting_word_quotation' and recievedQuotation == False:
-        
         current_datetime = datetime.now()
         datetime_str = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
         rows = incoming_msg.strip().split('\n')
@@ -244,9 +243,9 @@ def receive_whatsapp_message():
             product_values = [str(val) if val is not None else "" for val in [product[4], product[5], product[6], product[1], product[8], product[9], product[10], product[14], product[15], product[16]]]
             text = text + ' '.join(product_values) + '\n'
         #(productName, productTag, supplier, category, packing, origin, brand, effectiveDate, spec1, spec2, spec3, spec4, spec5, spec6, price, weightUnit, warehouse, notes)
-        user_states[sender] == 'awaiting_word_quotation_confirmation'
-        msg.body("Please review the product details. Reply 'Y' to confirm, or 'N' if you discover any issues.")
-        msg.body(text)
+        user_states[sender] = 'awaiting_word_quotation_confirmation'
+        msg.body("Please review the product details. Reply 'Y' to confirm, or 'N' if you discover any issues.\n" + text)
+        
 
     elif user_states[sender] == 'awaiting_word_quotation_confirmation':
         if incoming_msg == 'Y' or incoming_msg == 'Yes':
