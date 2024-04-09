@@ -114,6 +114,7 @@ def getCountry(concatText:str) -> str :
 
     if standardCountry == "":
         print("no _match is found :" + concatText)
+        return ""
     return standardCountry
 
 def getSpec(concatText:str) -> list:
