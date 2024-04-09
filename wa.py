@@ -212,8 +212,6 @@ def receive_whatsapp_message():
                 msg.body("Kindly provide PDF quotation of the corresponding supplier..")
                 user_states[sender] = 'awaiting_PDF_quotation'
 
-
-
         else:
             msg.body("Please specify '文字報價' or 'PDF報價'.")
     elif user_states[sender] == 'awaiting_word_quotation' and recievedQuotation == False:
@@ -234,12 +232,11 @@ def receive_whatsapp_message():
             user_data[sender]['product_detail'] = products
             recievedQuotation = True
             user_states[sender] = 'awaiting_word_quotation_not_null'
-            msg.body("已收到報價...正在處理中...")
+            #msg.body("已收到報價...正在處理中...")
         else:
             msg.body("Sorry, please enter again")
 
-            
-    elif user_states[sender] == 'awaiting_word_quotation_not_null' and recievedQuotation == True:
+    elif user_states[sender] == 'awaiting_word_quotation_not_null':
         text = user_data[sender]['supplier'] + '\n'
         for product in user_data[sender]['product_detail']:
             print(product)
@@ -248,6 +245,7 @@ def receive_whatsapp_message():
         #(productName, productTag, supplier, category, packing, origin, brand, effectiveDate, spec1, spec2, spec3, spec4, spec5, spec6, price, weightUnit, warehouse, notes)
         msg.body(text)
         user_states[sender] == 'awaiting_word_quotation_confirmation'
+
     elif user_states[sender] == 'awaiting_word_quotation_confirmation':
         msg.body("Please review the product details. Reply 'Y' to confirm, or 'N' if you discover any issues.")
         if incoming_msg == 'Y' or incoming_msg == 'Yes':
