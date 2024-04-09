@@ -151,6 +151,21 @@ def _find_latest_pdf_directory(directory):
     # Return the directory of the latest PDF file
     return "/"+latest_pdf
 
+def send_quotation_review(sender):
+    # Construct the message
+    text = user_data[sender]['supplier'] + '\n'
+    for product in user_data[sender]['product_detail']:
+        product_values = [str(val) if val is not None else "" for val in [product[4], product[5], product[6], product[1], product[8], product[9], product[10], product[14], product[15], product[16]]]
+        text += ' '.join(product_values) + '\n'
+
+    # Update the state to await confirmation
+    user_states[sender] = 'awaiting_word_quotation_confirmation'
+
+    # Send the message
+    msg = MessagingResponse().message()
+    msg.body("Please review the product details. Reply 'Y' to confirm, or 'N' if you discover any issues.\n" + text)
+    return str(msg)
+
 @app.route("/wa", methods=['POST'])
 def receive_whatsapp_message():
     # Extracting the message SID, sender's number, and message body from the request
@@ -232,19 +247,11 @@ def receive_whatsapp_message():
             user_data[sender]['product_detail'] = products
             recievedQuotation = True
             user_states[sender] = 'awaiting_word_quotation_not_null'
-            msg.body("已收到報價...正在處理中...")
+            return send_quotation_review(sender)
         else:
             msg.body("Sorry, please enter again")
 
-    elif user_states[sender] == 'awaiting_word_quotation_not_null':
-        text = user_data[sender]['supplier'] + '\n'
-        for product in user_data[sender]['product_detail']:
-            print(product)
-            product_values = [str(val) if val is not None else "" for val in [product[4], product[5], product[6], product[1], product[8], product[9], product[10], product[14], product[15], product[16]]]
-            text = text + ' '.join(product_values) + '\n'
-        #(productName, productTag, supplier, category, packing, origin, brand, effectiveDate, spec1, spec2, spec3, spec4, spec5, spec6, price, weightUnit, warehouse, notes)
-        user_states[sender] = 'awaiting_word_quotation_confirmation'
-        msg.body("Please review the product details. Reply 'Y' to confirm, or 'N' if you discover any issues.\n" + text)
+
         
 
     elif user_states[sender] == 'awaiting_word_quotation_confirmation':
