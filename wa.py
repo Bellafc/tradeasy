@@ -1,4 +1,3 @@
-    
 from flask import Flask, request, jsonify
 from twilio. twiml.messaging_response import MessagingResponse
 import os
@@ -68,6 +67,8 @@ def _formatString(concatText:str,supplier:str,effectiveDate:str) -> tuple:
     if packing == "":
         packing = "抄"
     price = textEx.getPriceWord(second_half)
+    if price:
+        return None
     weightUnit = textEx.getWeightUnit(second_half)
     category = textEx.getCategory(concatText)
     spec = textEx.getSpec(concatText)
@@ -223,12 +224,12 @@ def receive_whatsapp_message():
             if not row.strip():
                 continue
             product_detail = _formatString(row,user_data[sender]['supplier'],datetime_str)
-            products.append(product_detail)
-            print(product_detail)
-            print('')
+            if product_detail is not None:
+                products.append(product_detail)
+                print(product_detail)
+                print('')
         user_data[sender]['product_detail'] = products
         if  len(products) != 0:
-            msg.body("Please review the product details. Reply 'Y' to confirm, or 'N' if you discover any issues.")
             text = user_data[sender]['supplier'] + '\n'
             for product in products:
                 print(product)
@@ -237,14 +238,17 @@ def receive_whatsapp_message():
             #(productName, productTag, supplier, category, packing, origin, brand, effectiveDate, spec1, spec2, spec3, spec4, spec5, spec6, price, weightUnit, warehouse, notes)
             resp.message(text)
             user_states[sender] == 'awaiting_word_quotation_confirmation'
+        else:
+            msg.body("Please re-enter your data...")
     elif user_states[sender] == 'awaiting_word_quotation_confirmation':
+        msg.body("Please review the product details. Reply 'Y' to confirm, or 'N' if you discover any issues.")
         if incoming_msg == 'Y' or incoming_msg == 'Yes':
             for product in user_data[sender]['product_detail']:
                 _insert_product(connection,product)
         elif incoming_msg == 'N' or incoming_msg == 'No':
-            msg.body("Please re-enter your data...")
+            
             user_states[sender] = 'awaiting_word_quotation'
-            del user_data[sender]['product_detail']
+            user_data[sender]['product_detail'] = []
         else :
             resp.message("Sorry, please enter again")
 
