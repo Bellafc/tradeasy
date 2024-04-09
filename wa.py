@@ -216,36 +216,37 @@ def receive_whatsapp_message():
 
         else:
             msg.body("Please specify '文字報價' or 'PDF報價'.")
-    elif user_states[sender] == 'awaiting_word_quotation':
-        if recievedQuotation == False:
-            current_datetime = datetime.now()
-            datetime_str = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
-            rows = incoming_msg.strip().split('\n')
-            products =[]
-            for row in rows:
-                if not row.strip():
-                    continue
-                product_detail = _formatString(row,user_data[sender]['supplier'],datetime_str)
-                if product_detail is not None:
-                    products.append(product_detail)
-                    print(product_detail)
-                    print('')
-            if len(products) !=0:
-                user_data[sender]['product_detail'] = products
-                recievedQuotation = True
-            else:
-                msg.body("Sorry, please enter again")
-        else:          
-            text = user_data[sender]['supplier'] + '\n'
-            for product in products:
-                print(product)
-                product_values = [str(val) if val is not None else "" for val in [product[4], product[5], product[6], product[1], product[8], product[9], product[10], product[14], product[15], product[16]]]
-                text = text + ' '.join(product_values) + '\n'
-            #(productName, productTag, supplier, category, packing, origin, brand, effectiveDate, spec1, spec2, spec3, spec4, spec5, spec6, price, weightUnit, warehouse, notes)
-            msg.body(text)
-            user_states[sender] == 'awaiting_word_quotation_confirmation'
-            
+    elif user_states[sender] == 'awaiting_word_quotation' and recievedQuotation == False:
+        
+        current_datetime = datetime.now()
+        datetime_str = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
+        rows = incoming_msg.strip().split('\n')
+        products =[]
+        for row in rows:
+            if not row.strip():
+                continue
+            product_detail = _formatString(row,user_data[sender]['supplier'],datetime_str)
+            if product_detail is not None:
+                products.append(product_detail)
+                print(product_detail)
+                print('')
+        if len(products) !=0:
+            user_data[sender]['product_detail'] = products
+            recievedQuotation = True
+            msg.body("已收到報價...正在處理中...")
+        else:
+            msg.body("Sorry, please enter again")
 
+            
+    elif user_states[sender] == 'awaiting_word_quotation' and recievedQuotation == True:
+        text = user_data[sender]['supplier'] + '\n'
+        for product in products:
+            print(product)
+            product_values = [str(val) if val is not None else "" for val in [product[4], product[5], product[6], product[1], product[8], product[9], product[10], product[14], product[15], product[16]]]
+            text = text + ' '.join(product_values) + '\n'
+        #(productName, productTag, supplier, category, packing, origin, brand, effectiveDate, spec1, spec2, spec3, spec4, spec5, spec6, price, weightUnit, warehouse, notes)
+        msg.body(text)
+        user_states[sender] == 'awaiting_word_quotation_confirmation'
     elif user_states[sender] == 'awaiting_word_quotation_confirmation':
         msg.body("Please review the product details. Reply 'Y' to confirm, or 'N' if you discover any issues.")
         if incoming_msg == 'Y' or incoming_msg == 'Yes':
