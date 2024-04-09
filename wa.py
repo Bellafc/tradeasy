@@ -1,3 +1,4 @@
+    
 from flask import Flask, request, jsonify
 from twilio. twiml.messaging_response import MessagingResponse
 import os
@@ -226,15 +227,16 @@ def receive_whatsapp_message():
             print(product_detail)
             print('')
         user_data[sender]['product_detail'] = products
-        msg.body("Please review the product details. Reply 'Y' to confirm, or 'N' if you discover any issues.")
-        text = user_data[sender]['supplier'] + '\n'
-        for product in products:
-            print(product)
-            product_values = [str(val) if val is not None else "" for val in [product[4], product[5], product[6], product[1], product[8], product[9], product[10], product[14], product[15], product[16]]]
-            text = text + ''.join(product_values) + '\n'
-        #(productName, productTag, supplier, category, packing, origin, brand, effectiveDate, spec1, spec2, spec3, spec4, spec5, spec6, price, weightUnit, warehouse, notes)
-        resp.message(text)
-        user_states[sender] == 'awaiting_word_quotation_confirmation'
+        if  len(products) != 0:
+            msg.body("Please review the product details. Reply 'Y' to confirm, or 'N' if you discover any issues.")
+            text = user_data[sender]['supplier'] + '\n'
+            for product in products:
+                print(product)
+                product_values = [str(val) if val is not None else "" for val in [product[4], product[5], product[6], product[1], product[8], product[9], product[10], product[14], product[15], product[16]]]
+                text = text + ' '.join(product_values) + '\n'
+            #(productName, productTag, supplier, category, packing, origin, brand, effectiveDate, spec1, spec2, spec3, spec4, spec5, spec6, price, weightUnit, warehouse, notes)
+            resp.message(text)
+            user_states[sender] == 'awaiting_word_quotation_confirmation'
     elif user_states[sender] == 'awaiting_word_quotation_confirmation':
         if incoming_msg == 'Y' or incoming_msg == 'Yes':
             for product in user_data[sender]['product_detail']:
