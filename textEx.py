@@ -204,14 +204,31 @@ def getPrice(concatText: str) -> float:
     if matches:
         # Assuming the first match is the relevant price
         try:
-            return float(matches[0])
+            return float(matches[-1])
         except ValueError:
             print(f"Conversion issue with: '{concatText}', found: {matches[0]}")
             return 0.0
 
     print(f"No valid price found in: '{concatText}'")
     return None
+
+def getPriceWord(concatText: str) -> float:
+    # Regex pattern focusing on capturing numeric values preceded by $ or before specified symbols
+    pattern = r"(?:^|\$|\b(?:/|P|p|B|b|KG|k|磅|公斤|LB|lb|包|kg)\b)(\d+(?:\.\d+)?)"
     
+    # Searching for all matches, considering case insensitivity for units
+    matches = re.findall(pattern, concatText, flags=re.IGNORECASE)
+
+    if matches:
+        # Assuming the last match is the relevant price
+        try:
+            return float(matches[-1])
+        except ValueError:
+            print(f"Conversion issue with: '{concatText}', found: {matches[0]}")
+            return None
+
+    print(f"No valid price found in: '{concatText}'")
+    return None  
 
 def getWeightUnit(concatText:str) -> str:
     # This function searches for and returns the weight unit found in a given string `concatText`.
@@ -227,5 +244,6 @@ def getWeightUnit(concatText:str) -> str:
     weightUnit = _matchList(concatText,weightUnitDict)
     if not weightUnit :
         print("no _match is found")
+        return "lb"
     return weightUnit[-1]
 
