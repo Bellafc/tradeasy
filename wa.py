@@ -206,8 +206,9 @@ def receive_whatsapp_message():
             # and we're ready to update the database
             #update_database(user_data[sender])
             if incoming_msg == "文字報價":
-                msg.body("Kindly provide your data in the following format: Packing,Origin, Brand, Product, Specifications, Price, Price Unit, and Warehouse . Thank you!")
                 user_states[sender] = 'awaiting_word_quotation'
+                msg.body("Kindly provide your data in the following format: Packing,Origin, Brand, Product, Specifications, Price, Price Unit, and Warehouse . Thank you!")
+                
             else:
                 msg.body("Kindly provide PDF quotation of the corresponding supplier..")
                 user_states[sender] = 'awaiting_PDF_quotation'
@@ -232,7 +233,7 @@ def receive_whatsapp_message():
             user_data[sender]['product_detail'] = products
             recievedQuotation = True
             user_states[sender] = 'awaiting_word_quotation_not_null'
-            #msg.body("已收到報價...正在處理中...")
+            msg.body("已收到報價...正在處理中...")
         else:
             msg.body("Sorry, please enter again")
 
@@ -243,21 +244,23 @@ def receive_whatsapp_message():
             product_values = [str(val) if val is not None else "" for val in [product[4], product[5], product[6], product[1], product[8], product[9], product[10], product[14], product[15], product[16]]]
             text = text + ' '.join(product_values) + '\n'
         #(productName, productTag, supplier, category, packing, origin, brand, effectiveDate, spec1, spec2, spec3, spec4, spec5, spec6, price, weightUnit, warehouse, notes)
-        msg.body(text)
         user_states[sender] == 'awaiting_word_quotation_confirmation'
+        msg.body("Please review the product details. Reply 'Y' to confirm, or 'N' if you discover any issues.")
+        msg.body(text)
 
     elif user_states[sender] == 'awaiting_word_quotation_confirmation':
-        msg.body("Please review the product details. Reply 'Y' to confirm, or 'N' if you discover any issues.")
         if incoming_msg == 'Y' or incoming_msg == 'Yes':
             for product in user_data[sender]['product_detail']:
                 _insert_product(connection,product)
             recievedQuotation = False
             del user_states[sender]
+            msg.body("已更新報價")
         
         elif incoming_msg == 'N' or incoming_msg == 'No':
             user_states[sender] = 'awaiting_word_quotation'
             user_data[sender]['product_detail'] = []
             recievedQuotation = False
+            msg.body("請重新輸入報價")
         else :
             msg.body("Sorry, please enter again")
 
@@ -272,31 +275,6 @@ def receive_whatsapp_message():
             del user_states[sender]
         if sender in user_data:
             del user_data[sender]
-
-
-    
-
-
-
-
-    ### message recieved
-  
-    # identify pdf or whatsapp quotation
-    
-        
-
-
-
-    #1 (whatsapp) break down to individual rows
-
-    #2 extract data from whatsapp message
-    #formattedData = _formatString(message_str)
-
-
-    
-
-
-
 
     return str(resp)
 
