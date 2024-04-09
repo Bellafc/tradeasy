@@ -229,6 +229,7 @@ def receive_whatsapp_message():
         msg.body("Please review the product details. Reply 'Y' to confirm, or 'N' if you discover any issues.")
         text = user_data[sender]['supplier'] + '\n'
         for product in product_detail:
+            print(product)
             text = text + product[4] +product[5]+product[6] +product[2]+product[8]+product[9]+product[10] +product[14] +product[15] +product[16] 
             text = text + '\n'
         #(productName, productTag, supplier, category, packing, origin, brand, effectiveDate, spec1, spec2, spec3, spec4, spec5, spec6, price, weightUnit, warehouse, notes)
