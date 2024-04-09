@@ -203,10 +203,10 @@ def receive_whatsapp_message():
             # and we're ready to update the database
             #update_database(user_data[sender])
             if incoming_msg == "文字報價":
-                resp.message("Kindly provide your data in the following format: Packing,Origin, Brand, Product, Specifications, Price, Price Unit, and Warehouse . Thank you!")
+                msg.body("Kindly provide your data in the following format: Packing,Origin, Brand, Product, Specifications, Price, Price Unit, and Warehouse . Thank you!")
                 user_states[sender] = 'awaiting_word_quotation'
             else:
-                resp.message("Kindly provide PDF quotation of the corresponding supplier..")
+                msg.body("Kindly provide PDF quotation of the corresponding supplier..")
                 user_states[sender] = 'awaiting_PDF_quotation'
 
 
@@ -226,7 +226,7 @@ def receive_whatsapp_message():
             print(product_detail)
             print('')
         user_data[sender]['product_detail'] = products
-        resp.message("Please review the product details. Reply 'Y' to confirm, or 'N' if you discover any issues.")
+        msg.body("Please review the product details. Reply 'Y' to confirm, or 'N' if you discover any issues.")
         text = user_data[sender]['supplier'] + '\n'
         for product in product_detail:
             text = text + product[4] +product[5]+product[6] +product[2]+product[8]+product[9]+product[10] +product[14] +product[15] +product[16] 
@@ -239,12 +239,12 @@ def receive_whatsapp_message():
             for product in user_data[sender]['product_detail']:
                 _insert_product(connection,product)
         elif incoming_msg == 'N' or incoming_msg == 'No':
-            resp.message("Please re-enter your data...")
+            msg.body("Please re-enter your data...")
             user_states[sender] = 'awaiting_word_quotation'
             del user_data[sender]['product_detail']
         else :
             resp.message("Sorry, please enter again")
-            
+
     elif user_states[sender] == 'awaiting_PDF_quotation':
         del user_states[sender]
 
