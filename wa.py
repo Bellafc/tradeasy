@@ -164,6 +164,7 @@ def receive_whatsapp_message():
     incoming_msg = request.form.get('Body').strip()
     resp = MessagingResponse()
     msg = resp.message()
+    recievedQuotation = False
 
     if sender not in user_states:
         # New or reset user interaction
@@ -216,41 +217,49 @@ def receive_whatsapp_message():
         else:
             msg.body("Please specify '文字報價' or 'PDF報價'.")
     elif user_states[sender] == 'awaiting_word_quotation':
-        current_datetime = datetime.now()
-        datetime_str = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
-        rows = incoming_msg.strip().split('\n')
-        products =[]
-        for row in rows:
-            if not row.strip():
-                continue
-            product_detail = _formatString(row,user_data[sender]['supplier'],datetime_str)
-            if product_detail is not None:
-                products.append(product_detail)
-                print(product_detail)
-                print('')
-        user_data[sender]['product_detail'] = products
-        if  len(products) != 0:
+        if recievedQuotation == False:
+            current_datetime = datetime.now()
+            datetime_str = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
+            rows = incoming_msg.strip().split('\n')
+            products =[]
+            for row in rows:
+                if not row.strip():
+                    continue
+                product_detail = _formatString(row,user_data[sender]['supplier'],datetime_str)
+                if product_detail is not None:
+                    products.append(product_detail)
+                    print(product_detail)
+                    print('')
+            if len(products) !=0:
+                user_data[sender]['product_detail'] = products
+                recievedQuotation = True
+            else:
+                msg.body("Sorry, please enter again")
+        else:          
             text = user_data[sender]['supplier'] + '\n'
             for product in products:
                 print(product)
                 product_values = [str(val) if val is not None else "" for val in [product[4], product[5], product[6], product[1], product[8], product[9], product[10], product[14], product[15], product[16]]]
                 text = text + ' '.join(product_values) + '\n'
             #(productName, productTag, supplier, category, packing, origin, brand, effectiveDate, spec1, spec2, spec3, spec4, spec5, spec6, price, weightUnit, warehouse, notes)
-            resp.message(text)
+            msg.body(text)
             user_states[sender] == 'awaiting_word_quotation_confirmation'
-        else:
-            msg.body("Please re-enter your data...")
+            
+
     elif user_states[sender] == 'awaiting_word_quotation_confirmation':
         msg.body("Please review the product details. Reply 'Y' to confirm, or 'N' if you discover any issues.")
         if incoming_msg == 'Y' or incoming_msg == 'Yes':
             for product in user_data[sender]['product_detail']:
                 _insert_product(connection,product)
+            recievedQuotation = False
+            del user_states[sender]
+        
         elif incoming_msg == 'N' or incoming_msg == 'No':
-            
             user_states[sender] = 'awaiting_word_quotation'
             user_data[sender]['product_detail'] = []
+            recievedQuotation = False
         else :
-            resp.message("Sorry, please enter again")
+            msg.body("Sorry, please enter again")
 
     elif user_states[sender] == 'awaiting_PDF_quotation':
         del user_states[sender]
