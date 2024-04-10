@@ -41,7 +41,7 @@ client = Client(account_sid, auth_token)
 
 message = client.messages.create(
   from_='whatsapp:+14155238886',
-  body='Whatsapp client activated',
+  body='新樂Whatsapp報價系統啟動成功...',
   to='whatsapp:+85261520721'
 )
 
@@ -189,43 +189,45 @@ def receive_whatsapp_message():
             user_data[sender] = {}
         elif incoming_msg == 'get quote':
             pdf_path = _find_latest_pdf_directory("static/pdfs")
-            resp.message("sending PDF... Please wait...")
-            ngrok_base_url = 'https://17f1-54-153-171-62.ngrok-free.app'  # Update with your actual ngrok URL
+            resp.message("PDF報價單發送中...請稍候片刻...")
+            ngrok_base_url = 'https://c8d9-54-153-171-62.ngrok-free.app'  # Update with your actual ngrok URL
             url = f'{ngrok_base_url}{pdf_path}'
             print(url) 
             resp.message(url)
             msg.media(url)         
         elif incoming_msg == "gen quote":
             resp.message("Generating Quotation PDF...")
-            date_str = "2024-02-26"
-            date_datetime = datetime.strptime(date_str, "%Y-%m-%d")
+            current_datetime = datetime.now()
+            datetime_str = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
             try:
-                pdf_path = pdfQuoteGenerator.createQuotation(connection, date_datetime, days=2)
+                pdf_path = pdfQuoteGenerator.createQuotation(connection, datetime_str, days=3)
+                msg.body("PDF報價單生成已完成,請輸入‘get quote’查閱報價...")
 
             except Exception as e:
                 print(f"An error occurred: {e}")
-            
+      
+
 
         else:
-            msg.body("Please type 'update' or 'gen quote' or 'get quote' to start the quotation update process.")
+            msg.body("請輸入 'update' | 'gen quote' | 'get quote' 以開始使用本系統")
 
     elif user_states[sender] == 'awaiting_supplier':
         user_data[sender]['supplier'] = incoming_msg  # Store the supplier name
-        msg.body("文字報價 還是 PDF報價？")
+        msg.body("請問是 文字報價 還是 PDF報價？")
         user_states[sender] = 'awaiting_quotation_type'
     elif user_states[sender] == 'awaiting_quotation_type':
-        if incoming_msg in ["文字報價", "PDF報價"]:
+        if incoming_msg in ["文字報價", "PDF報價","文字","PDF"]:
             user_data[sender]['quotation_type'] = incoming_msg
             # Here, you'd normally ask for the actual quotation text or PDF,
             # but for simplicity, let's assume it's the end of the process
             # and we're ready to update the database
             #update_database(user_data[sender])
-            if incoming_msg == "文字報價":
+            if incoming_msg == "文字報價" or incoming_msg == "文字":
                 user_states[sender] = 'awaiting_word_quotation'
-                msg.body("Kindly provide your data in the following format: Packing,Origin, Brand, Product, Specifications, Price, Price Unit, and Warehouse . Thank you!")
+                msg.body("請根據以下格式提供數據: Packing,Origin, Brand, Product, Specifications, Price, Price Unit, and Warehouse .")
                 
             else:
-                msg.body("Kindly provide PDF quotation of the corresponding supplier..")
+                msg.body("請提供PDF報價")
                 user_states[sender] = 'awaiting_PDF_quotation'
 
         else:
@@ -257,7 +259,7 @@ def receive_whatsapp_message():
 
             # Send the message
             
-            msg.body("Please review the product details. Reply 'Y' to confirm, or 'N' if you discover any issues.\n" + text)
+            msg.body("*********\n請檢查數據是否準確，一經確認則無法修改\n 請輸入 'Y' 確認, 或 'N' 重新輸入\n*********\n\n" + text)
 
 
         else:
@@ -280,14 +282,14 @@ def receive_whatsapp_message():
             recievedQuotation = False
             msg.body("請重新輸入報價")
         else :
-            msg.body("Sorry, please enter again")
+            msg.body("對不起,請重新輸入")
 
     elif user_states[sender] == 'awaiting_PDF_quotation':
         del user_states[sender]
 
     else:
         # Fallback or unknown state
-        msg.body("Sorry, I didn't understand that.")
+        msg.body("對不起,我唔明白你的指令")
         # Optionally reset user state here
         if sender in user_states:
             del user_states[sender]
