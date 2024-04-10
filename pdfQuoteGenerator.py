@@ -11,6 +11,7 @@ from docx.oxml.ns import qn
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from pylovepdf.ilovepdf import ILovePdf
 import shutil
+from twilio. twiml.messaging_response import MessagingResponse
 
 import os
 
@@ -326,29 +327,34 @@ def _convert_to_pdf(input_file, output_dir):
     except subprocess.CalledProcessError as e:
         print("Conversion failed:", e)
 
-def _convert_and_rename_docx_to_pdf(api_key, input_path, desired_output_path):
-    try:
-        ilovepdf = ILovePdf(public_key=api_key, verify_ssl=True)
-        task = ilovepdf.new_task('officepdf')
-        task.add_file(input_path)
-        task.execute()
+def _convert_docx_to_pdf(api_key,input_path) -> str:
+    # Initialize the ILovePdf object with your project's public API key
+    ilovepdf = ILovePdf(api_key, verify_ssl=True)
+    
+    # Create a new "officepdf" task
+    task = ilovepdf.new_task('officepdf')
+    
+    # Add the .docx file for conversion
+    task.add_file(input_path)
+    
+    # Execute the task: Convert .docx to .pdf
+    task.execute()
+    
+    # Download the resulting .pdf to the desired output path
+    filename = task.download()
+    target_dir = os.path.join(os.getcwd(), 'static', 'pdfs')
+    filename_without_ext, file_ext = os.path.splitext(filename)
+    current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    new_filename = f"{filename_without_ext}_{current_time}{file_ext}"
+    new_target_file_path = os.path.join(target_dir, new_filename)
+    shutil.move(os.path.join(os.getcwd(), filename), new_target_file_path)
+    
+    # Optionally, delete the current task to clean up
+    task.delete_current_task()
+    print("deleting task in _convert_docx_to_pdf")
 
-        # Download the file. The download method now returns the name of the downloaded file.
-        downloaded_file_name = task.download()
-        
-        # Assuming the downloaded file name is just the name, not the path,
-        # and it's downloaded to the current working directory.
-        downloaded_file_path = os.path.join(os.getcwd(), downloaded_file_name)
-        
-        # Move the downloaded file to the desired output path
-        if os.path.exists(desired_output_path):
-            os.remove(desired_output_path)  # Remove if the target file already exists
-        shutil.move(downloaded_file_path, desired_output_path)
 
-        print(f"Conversion successful. PDF saved as: {desired_output_path}")
-        
-    except Exception as e:
-        print(f"Error during conversion: {e}")
+    return os.path.join('static', 'pdfs',new_filename)
 
 def createQuotation(connection,effectiveDate:datetime,days: int = 2) -> str :
     document = Document()
@@ -450,10 +456,11 @@ def createQuotation(connection,effectiveDate:datetime,days: int = 2) -> str :
     document.save(docx_file)
     pdf_file = os.path.join(static_dir, 'demo')
 
-    #api_key = 'project_public_dd58a2ab023f0c665dc5749a8f0931e0_Pl0dh0a277b8551bb9cdf01e043af64ce0304'
+    api_key = 'project_public_dd58a2ab023f0c665dc5749a8f0931e0_Pl0dh0a277b8551bb9cdf01e043af64ce0304'
 
-    _convert_to_pdf(docx_file,pdf_file )
+    path =  _convert_docx_to_pdf(api_key, docx_file )
+    print(path)
 
     # Return a path relative to the static directory
-    return "tradeasy/static/pdfs/demo"
+    return path
 
