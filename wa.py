@@ -198,9 +198,10 @@ def receive_whatsapp_message():
         elif incoming_msg == "gen quote":
             resp.message("Generating Quotation PDF...")
             current_datetime = datetime.now()
-            datetime_str = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
+            
+            
             try:
-                pdf_path = pdfQuoteGenerator.createQuotation(connection, datetime_str, days=3)
+                pdf_path = pdfQuoteGenerator.createQuotation(connection, current_datetime, days=3)
                 msg.body("PDF報價單生成已完成,請輸入‘get quote’查閱報價...")
 
             except Exception as e:
