@@ -42,10 +42,12 @@ client = Client(account_sid, auth_token)
 welcome_message = """
 歡迎使用本系統，請根據下列指令操作以開始：
 
-「Update」：將最新的報價數據更新至資料庫。
-「Gen Quote」：此指令將生成最新的報價PDF檔案。
-「Get PDF」：此指令返回最新的PDF報價文件。
-「Quote ID」：根據產品編號返回相關的產品詳情。
+#Update：將最新的報價數據更新至資料庫。
+#Gen Quote：此指令將生成最新的報價PDF檔案。
+#Get PDF：此指令返回最新的PDF報價文件。
+#Quote ID：根據產品編號返回相關的產品詳情。
+#Exit：推出系統
+
 
 請輸入您希望執行的操作指令：
 """
@@ -197,7 +199,7 @@ def receive_whatsapp_message():
     msg = resp.message()
     recievedQuotation = False
 
-    if incoming_msg.upper() == "exit".upper():
+    if incoming_msg.upper() == "#exit".upper():
         msg.body("退出系統...")
         if sender in user_states:
             del user_states[sender]
@@ -206,11 +208,11 @@ def receive_whatsapp_message():
 
     if sender not in user_states:
         # New or reset user interaction
-        if incoming_msg.upper() == "update".upper():
+        if incoming_msg.upper() == "#update".upper():
             msg.body("請提供供應商")
             user_states[sender] = 'awaiting_supplier'
             user_data[sender] = {}
-        elif incoming_msg.upper() == 'get PDF'.upper():
+        elif incoming_msg.upper() == '#get PDF'.upper():
             pdf_path = _find_latest_pdf_directory("static/pdfs")
             resp.message("PDF報價單發送中...請稍候片刻...")
             ngrok_base_url = 'https://c285-54-153-171-62.ngrok-free.app'  # Update with your actual ngrok URL
@@ -218,11 +220,11 @@ def receive_whatsapp_message():
             print(url) 
             resp.message(url)
             msg.media(url)    
-        elif incoming_msg.upper() == 'quote id'.upper():
+        elif incoming_msg.upper() == '#quote id'.upper():
             msg.body("請提供 product id")
             user_states[sender] = 'awaiting_product_id'
             user_data[sender] = {}
-        elif incoming_msg.upper() == "gen quote".upper():
+        elif incoming_msg.upper() == "#gen quote".upper():
             resp.message("Generating Quotation PDF...")
             current_datetime = datetime.now()
             
