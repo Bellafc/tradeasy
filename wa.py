@@ -176,7 +176,7 @@ def send_quotation_review(sender):
     msg.body("Please review the product details. Reply 'Y' to confirm, or 'N' if you discover any issues.\n" + text)
     return str(msg)
 
-def safe_str(value, default="N/A"):
+def safe_str(value, default=""):
     """Convert a value to a string, replacing None with a default value."""
     if value is None:
         return default
@@ -248,7 +248,7 @@ def receive_whatsapp_message():
                 text += (safe_str(product['product_id'][0]) + " " +
                         safe_str(product['brand'][0]) + " " +
                         safe_str(product['productTag'][0]) + " " +
-                        safe_str(product.get('price', [default])[0]) + " " +  # Corrected key 'price]'
+                        safe_str(product.get('price', "清")[0]) + " " +  # Corrected key 'price]'
                         safe_str(product['weightUnit'][0]) + " " +
                         safe_str(product['warehouse'][0]) + " " +
                         safe_str(product['supplier'][0]) + "\n")
