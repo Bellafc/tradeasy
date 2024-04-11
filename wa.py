@@ -39,10 +39,19 @@ except Error as e:
 account_sid = 'AC79c2fe6511ac0c9a1c3881c384798e22'
 auth_token = 'c9a5e13731974f3a5d548102fbd96629'
 client = Client(account_sid, auth_token)
+welcome_message = """
+歡迎使用本系統，請根據下列指令操作以開始：
 
+「Update」：將最新的報價數據更新至資料庫。
+「Gen Quote」：此指令將生成最新的報價PDF檔案。
+「Get PDF」：此指令返回最新的PDF報價文件。
+「Quote ID」：根據產品編號返回相關的產品詳情。
+
+請輸入您希望執行的操作指令：
+"""
 message = client.messages.create(
   from_='whatsapp:+14155238886',
-  body='新樂Whatsapp報價系統啟動成功...',
+  body=welcome_message,
   to='whatsapp:+85261520721'
 )
 
@@ -167,6 +176,12 @@ def send_quotation_review(sender):
     msg.body("Please review the product details. Reply 'Y' to confirm, or 'N' if you discover any issues.\n" + text)
     return str(msg)
 
+def safe_str(value, default="N/A"):
+    """Convert a value to a string, replacing None with a default value."""
+    if value is None:
+        return default
+    return str(value)
+
 @app.route("/wa", methods=['POST'])
 def receive_whatsapp_message():
     # Extracting the message SID, sender's number, and message body from the request
@@ -214,7 +229,7 @@ def receive_whatsapp_message():
 
 
         else:
-            msg.body("請輸入 'update' | 'gen quote' | 'get PDF' 以開始使用本系統")
+            msg.body(welcome_message)
     
 
     elif user_states[sender] == 'awaiting_supplier':
@@ -230,8 +245,13 @@ def receive_whatsapp_message():
             try:
                 row_int = int(row.strip())  # Remove leading/trailing whitespace and convert to int
                 product = quotation.getQuoteByID(connection,row_int)
-                text = text + str(product['product_id'][0]) + " " + product['brand'][0] + product['productTag'][0]+ " "+ str(product['price]'][0])+ product['weightUnit'][0] +" "+ product['warehouse'][0]+ " "+ product['supplier'][0] + "\n"
-
+                text += (safe_str(product['product_id'][0]) + " " +
+                        safe_str(product['brand'][0]) + " " +
+                        safe_str(product['productTag'][0]) + " " +
+                        safe_str(product.get('price', [default])[0]) + " " +  # Corrected key 'price]'
+                        safe_str(product['weightUnit'][0]) + " " +
+                        safe_str(product['warehouse'][0]) + " " +
+                        safe_str(product['supplier'][0]) + "\n")
             except ValueError:
                 # If conversion fails, skip this row or handle it as needed
                 print(f"Skipping non-integer row: {row}")
