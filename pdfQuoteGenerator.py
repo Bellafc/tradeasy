@@ -37,9 +37,9 @@ def _setColumn(document: Document, category: str):
     document.add_paragraph(category)
     # Assuming _set_cell_text_and_alignment and _set_vertical_alignment are previously defined
 
-    table = document.add_table(rows=1, cols=10)
-    column_widths = [Cm(1), Cm(15), Cm(1), Cm(1), Cm(1), Cm(1), Cm(15), Cm(1), Cm(1), Cm(1)]
-    cell_texts = ['重量', '產品', '單價', '單位', '倉位', '重量', '產品', '單價', '單位', '倉位']
+    table = document.add_table(rows=1, cols=12)
+    column_widths = [Cm(1),Cm(1), Cm(11), Cm(1), Cm(1), Cm(1),Cm(1), Cm(1), Cm(11), Cm(1), Cm(1), Cm(1)]
+    cell_texts = ['ID','重量', '產品', '單價', '單位', '倉位', 'ID','重量', '產品', '單價', '單位', '倉位']
     
     for row in table.rows:
         for idx, cell in enumerate(row.cells):
@@ -62,6 +62,7 @@ def _setColumn(document: Document, category: str):
     
     
     return table
+
 
 def _get_unique_categories(df):
     """
@@ -220,7 +221,7 @@ def update_document_with_products(document, df, categoryList):
 
 
             elif left_row_count >= MAX_ROWS_PER_PAGE:
-                cell_index_base = 5
+                cell_index_base = 6
                 left_side =  False
                 right_row_count += 1
                 if previous_product_tag is not None and current_product_tag != previous_product_tag:
@@ -235,8 +236,8 @@ def update_document_with_products(document, df, categoryList):
             if left_side or (left_side == False and right_row_count < MAX_ROWS_PER_PAGE):
                 # Assign product details to cells
                 
-                table.rows[current_row_count].cells[cell_index_base].text = str(row['packing']) if row['packing'] is not None else ""
-                
+                table.rows[current_row_count].cells[cell_index_base].text = str(row['product_id']) if row['packing'] is not None else ""
+                table.rows[current_row_count].cells[cell_index_base+1].text = str(row['packing']) if row['packing'] is not None else ""
                 concatenated_text = ''
                 word_count = 0 
                 for col in ['origin', 'brand', 'productTag', 'spec1', 'spec2']:
@@ -246,25 +247,25 @@ def update_document_with_products(document, df, categoryList):
                     
                 if word_count > 20 and left_side:
                     part1, part2 = _split_text_evenly(concatenated_text)
-                    table.rows[current_row_count].cells[cell_index_base + 1].text = part1
+                    table.rows[current_row_count].cells[cell_index_base + 2].text = part1
                     _table_add_row(table)
-                    table.rows[current_row_count + 1].cells[cell_index_base + 1].text = part2
+                    table.rows[current_row_count + 1].cells[cell_index_base + 2].text = part2
                     left_row_count += 1
                 elif(word_count > 20 and left_side != True):
                     part1, part2 = _split_text_evenly(concatenated_text)
-                    table.rows[current_row_count].cells[cell_index_base + 1].text = part1
-                    table.rows[current_row_count + 1].cells[cell_index_base + 1].text = part2
+                    table.rows[current_row_count].cells[cell_index_base + 2].text = part1
+                    table.rows[current_row_count + 1].cells[cell_index_base + 2].text = part2
                     right_row_count += 1
                     
                     
                 else:
-                    table.rows[current_row_count].cells[cell_index_base + 1].text = concatenated_text
+                    table.rows[current_row_count].cells[cell_index_base + 2].text = concatenated_text
 
                 
                 # Assign other product details to subsequent cells
-                table.rows[current_row_count].cells[cell_index_base + 2].text = str(row['price']) if row['price'] is not None else ""
-                table.rows[current_row_count].cells[cell_index_base + 3].text = str(row['weightUnit']) if row['weightUnit'] is not None else ""
-                table.rows[current_row_count].cells[cell_index_base + 4].text = str(row['warehouse']) if row['warehouse'] is not None else ""
+                table.rows[current_row_count].cells[cell_index_base + 3].text = str(row['price']) if row['price'] is not None else ""
+                table.rows[current_row_count].cells[cell_index_base + 4].text = str(row['weightUnit']) if row['weightUnit'] is not None else ""
+                table.rows[current_row_count].cells[cell_index_base + 5].text = str(row['warehouse']) if row['warehouse'] is not None else ""
 
 
                 

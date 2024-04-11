@@ -15,6 +15,7 @@ from datetime import datetime
 import time
 import glob
 import warnings
+import quotation
 
 # Suppress all warnings
 warnings.filterwarnings("ignore")
@@ -183,22 +184,25 @@ def receive_whatsapp_message():
 
     if sender not in user_states:
         # New or reset user interaction
-        if incoming_msg == "update":
+        if incoming_msg.upper() == "update".upper():
             msg.body("請提供供應商")
             user_states[sender] = 'awaiting_supplier'
             user_data[sender] = {}
-        elif incoming_msg == 'get quote':
+        elif incoming_msg.upper() == 'get PDF'.upper():
             pdf_path = _find_latest_pdf_directory("static/pdfs")
             resp.message("PDF報價單發送中...請稍候片刻...")
             ngrok_base_url = 'https://c8d9-54-153-171-62.ngrok-free.app'  # Update with your actual ngrok URL
             url = f'{ngrok_base_url}{pdf_path}'
             print(url) 
             resp.message(url)
-            msg.media(url)         
-        elif incoming_msg == "gen quote":
+            msg.media(url)    
+        elif incoming_msg.upper() == 'quote id'.upper():
+            msg.body("請提供 product id")
+            user_states[sender] = 'awaiting_product_id'
+            user_data[sender] = {}
+        elif incoming_msg.upper() == "gen quote".upper():
             resp.message("Generating Quotation PDF...")
             current_datetime = datetime.now()
-            
             
             try:
                 pdf_path = pdfQuoteGenerator.createQuotation(connection, current_datetime, days=3)
@@ -210,12 +214,32 @@ def receive_whatsapp_message():
 
 
         else:
-            msg.body("請輸入 'update' | 'gen quote' | 'get quote' 以開始使用本系統")
+            msg.body("請輸入 'update' | 'gen quote' | 'get PDF' 以開始使用本系統")
+    
 
     elif user_states[sender] == 'awaiting_supplier':
         user_data[sender]['supplier'] = incoming_msg  # Store the supplier name
         msg.body("請問是 文字報價 還是 PDF報價？")
         user_states[sender] = 'awaiting_quotation_type'
+    elif user_states[sender] == 'awaiting_product_id':
+        text = "\n"
+        rows = incoming_msg.strip().split('\n')
+        for row in rows:
+            if not row.strip():
+                continue
+            try:
+                row_int = int(row.strip())  # Remove leading/trailing whitespace and convert to int
+                product = quotation.getQuoteByID(connection,row_int)
+                text = text + str(product['product_id'][0]) + " " + product['brand'][0] + product['productTag'][0]+ " "+ str(product['price]'][0])+ product['weightUnit'][0] +" "+ product['warehouse'][0]+ " "+ product['supplier'][0] + "\n"
+
+            except ValueError:
+                # If conversion fails, skip this row or handle it as needed
+                print(f"Skipping non-integer row: {row}")
+                continue  # Skip to the next iteration of the loop
+
+        del user_states[sender]
+        msg.body("閣下所需的 成本報價如下： " + text)
+
     elif user_states[sender] == 'awaiting_quotation_type':
         if incoming_msg in ["文字報價", "PDF報價","文字","PDF"]:
             user_data[sender]['quotation_type'] = incoming_msg
@@ -225,7 +249,7 @@ def receive_whatsapp_message():
             #update_database(user_data[sender])
             if incoming_msg == "文字報價" or incoming_msg == "文字":
                 user_states[sender] = 'awaiting_word_quotation'
-                msg.body("請根據以下格式提供數據: Packing,Origin, Brand, Product, Specifications, Price, Price Unit, and Warehouse .")
+                msg.body("請根據以下格式提供數據: \nPacking,Origin, Brand, Product, Specifications, Price, Price Unit, and Warehouse .")
                 
             else:
                 msg.body("請提供PDF報價")
@@ -264,7 +288,7 @@ def receive_whatsapp_message():
 
 
         else:
-            msg.body("Sorry, please enter again")
+            msg.body("對不起,請重新輸入")
 
 
         
@@ -287,7 +311,12 @@ def receive_whatsapp_message():
 
     elif user_states[sender] == 'awaiting_PDF_quotation':
         del user_states[sender]
-
+    elif incoming_msg.upper() == "exit".upper():
+        msg.body("退出系統...")
+        if sender in user_states:
+            del user_states[sender]
+        if sender in user_data:
+            del user_data[sender]
     else:
         # Fallback or unknown state
         msg.body("對不起,我唔明白你的指令")

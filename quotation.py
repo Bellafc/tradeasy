@@ -143,15 +143,42 @@ def getBestQuote(connection,effectiveDate: datetime, days: int = 2) -> pd.DataFr
         if cursor is not None:
             cursor.close()
     
+    return df
 
+def getQuoteByID(connection, product_id) -> pd.DataFrame:
+    try:
+        cursor = connection.cursor()
 
+        # Define the SQL query, using a placeholder for the product_id parameter
+        query = """
+        SELECT *
+        FROM Tradeasy_quotation
+        WHERE product_id = %s;
+        """
+
+        # Execute the query with the specified parameter
+        cursor.execute(query, (product_id,))
+
+        # Fetch all the results
+        result = cursor.fetchall()
+
+        # If result is empty, return an empty DataFrame
+        if not result:
+            return pd.DataFrame()
+
+        # Convert the result to a pandas DataFrame
+        df = pd.DataFrame(result, columns=[i[0] for i in cursor.description])
+
+    except Error as e:
+        print(f"Error: {e}")
+        df = pd.DataFrame()  # Return an empty DataFrame in case of error
+
+    finally:
+        if cursor is not None:
+            cursor.close()
 
     return df
 
-
-
-def getQuoteByProduct(connection, product:str,effectiveDate: datetime, days: int = 2) -> pd.DataFrame:
-    return pd.DataFrame()
 
 
 

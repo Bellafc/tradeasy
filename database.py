@@ -11,7 +11,7 @@ def create_table(connection):
     try:
         cursor = connection.cursor()
         create_table_query = '''CREATE TABLE IF NOT EXISTS Tradeasy_quotation (
-            id INT AUTO_INCREMENT PRIMARY KEY,
+            product_id INT NOT NULL AUTO_INCREMENT,
             productName VARCHAR(255),
             productTag VARCHAR(255),
             supplier VARCHAR(255),
@@ -28,8 +28,9 @@ def create_table(connection):
             spec6 VARCHAR(255),
             price DECIMAL(10, 2),
             weightUnit ENUM('KG', 'LB', 'PC', 'CTN'),
-            warehouse ENUM('嘉里温控貨倉1', '嘉里温控貨倉2', '沙田冷倉1倉', '沙田冷倉2倉', '其士冷藏倉庫', '光輝1倉', '光輝2倉', '威強凍倉', '亞洲生活冷倉', '嘉威倉', '百匯倉', '萬集倉', '萬安倉', '送貨'),
-            notes TEXT
+            warehouse VARCHAR(255) ,
+            notes TEXT,
+            PRIMARY KEY (product_id)
         );'''
         cursor.execute(create_table_query)
         print("Table created successfully")
@@ -104,6 +105,7 @@ def query_data(connection, query):
         if connection.is_connected():
             cursor.close()
 
+
 def query_data_dataframe(connection, query):
     try:
         cursor = connection.cursor()
@@ -122,7 +124,7 @@ def query_data_dataframe(connection, query):
             cursor.close()
 
 def dataframe_to_db(df, connection):
-    #this function reads a df of formatted data and updates to df
+    
     for index, row in tqdm(df.iterrows(), total=df.shape[0], desc="Inserting rows"):
         product_details = tuple(row)  # Convert the DataFrame row to a tuple
         insert_product(connection, product_details)
@@ -131,6 +133,5 @@ def df_tosql(df):
     connection_string = f"mysql+mysqlconnector://admin:admin123@quote.c9ac6sewqau0.ap-southeast-2.rds.amazonaws.com/quote"
     engine = create_engine(connection_string)
     df.to_sql('Tradeasy_quotation', con=engine, if_exists='replace', index=False, chunksize=500)
-
 
      
