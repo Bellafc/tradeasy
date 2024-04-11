@@ -197,6 +197,13 @@ def receive_whatsapp_message():
     msg = resp.message()
     recievedQuotation = False
 
+    if incoming_msg.upper() == "exit".upper():
+        msg.body("退出系統...")
+        if sender in user_states:
+            del user_states[sender]
+        if sender in user_data:
+            del user_data[sender]
+
     if sender not in user_states:
         # New or reset user interaction
         if incoming_msg.upper() == "update".upper():
@@ -331,12 +338,7 @@ def receive_whatsapp_message():
 
     elif user_states[sender] == 'awaiting_PDF_quotation':
         del user_states[sender]
-    elif incoming_msg.upper() == "exit".upper():
-        msg.body("退出系統...")
-        if sender in user_states:
-            del user_states[sender]
-        if sender in user_data:
-            del user_data[sender]
+
     else:
         # Fallback or unknown state
         msg.body("對不起,我唔明白你的指令")
