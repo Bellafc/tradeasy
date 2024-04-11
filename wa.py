@@ -191,7 +191,7 @@ def receive_whatsapp_message():
         elif incoming_msg.upper() == 'get PDF'.upper():
             pdf_path = _find_latest_pdf_directory("static/pdfs")
             resp.message("PDF報價單發送中...請稍候片刻...")
-            ngrok_base_url = 'https://c8d9-54-153-171-62.ngrok-free.app'  # Update with your actual ngrok URL
+            ngrok_base_url = 'https://c285-54-153-171-62.ngrok-free.app'  # Update with your actual ngrok URL
             url = f'{ngrok_base_url}{pdf_path}'
             print(url) 
             resp.message(url)
