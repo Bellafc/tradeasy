@@ -215,7 +215,7 @@ def receive_whatsapp_message():
         elif incoming_msg.upper() == '#get PDF'.upper():
             pdf_path = _find_latest_pdf_directory("static/pdfs")
             resp.message("PDF報價單發送中...請稍候片刻...")
-            ngrok_base_url = 'https://c285-54-153-171-62.ngrok-free.app'  # Update with your actual ngrok URL
+            ngrok_base_url = 'https://b820-54-153-171-62.ngrok-free.app'  # Update with your actual ngrok URL
             url = f'{ngrok_base_url}{pdf_path}'
             print(url) 
             resp.message(url)
@@ -278,7 +278,7 @@ def receive_whatsapp_message():
             #update_database(user_data[sender])
             if incoming_msg == "文字報價" or incoming_msg == "文字":
                 user_states[sender] = 'awaiting_word_quotation'
-                msg.body("請根據以下格式提供數據: \nPacking,Origin, Brand, Product, Specifications, Price, Price Unit, and Warehouse .")
+                msg.body("請根據以下格式提供數據: \nPacking|Origin|Brand|Product|Specifications|Price|Weight Unit|Warehouse .")
                 
             else:
                 msg.body("請提供PDF報價")
