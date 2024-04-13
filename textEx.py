@@ -190,7 +190,7 @@ def getPacking(concatText:str) ->str:
     packing = ""
     packingDict = _readData("PACKING","LOCAL")
     packing = _match(concatText,packingDict)
-    if packing == "":
+    if packing == None:
         print("no _match is found")
     return packing
 

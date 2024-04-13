@@ -76,7 +76,7 @@ def _formatString(concatText:str,supplier:str,effectiveDate:str) -> tuple:
     if warehouse:
         warehouse = warehouse[0]
     packing = textEx.getPacking(first_half)
-    if packing == "":
+    if packing is None:
         packing = "抄"
     price = textEx.getPriceWord(second_half)
     if price is None:
