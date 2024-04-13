@@ -72,6 +72,11 @@ def _formatString(concatText:str,supplier:str,effectiveDate:str) -> tuple:
     brand = textEx.getBrand(concatText)
     country = textEx.getCountry(first_half)
     product = textEx.getProduct(concatText)
+    if product != "":
+        category = textEx.getCategory(product)
+    else:
+        # if cannot find a product tag
+        return None
     warehouse = textEx.getWarehoue(second_half)
     if warehouse:
         warehouse = warehouse[0]
@@ -82,7 +87,7 @@ def _formatString(concatText:str,supplier:str,effectiveDate:str) -> tuple:
     if price is None:
         return None
     weightUnit = textEx.getWeightUnit(second_half)
-    category = textEx.getCategory(concatText)
+    
     spec = textEx.getSpec(concatText)
 
     # Sort 'spec' in alphabetical order
