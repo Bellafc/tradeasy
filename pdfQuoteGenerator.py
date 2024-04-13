@@ -63,7 +63,6 @@ def _setColumn(document: Document, category: str):
     
     return table
 
-
 def _get_unique_categories(df):
     """
     Returns a list of unique categories from the 'category' column in the DataFrame.
@@ -186,6 +185,29 @@ def _table_add_row(table):
     for cell in new_row.cells:
         _set_cell_borders(cell)
 
+def _getMarkUp(price)-> float:
+    try:
+        price = float(price)
+        if price <= 10:
+            marketup = 1
+        elif price >10 and price <=20:
+            marketup = 2
+        elif price >20 and price <=30:
+            marketup = 2.5
+        elif price > 200:
+            marketup = 10
+        else:
+            marketup = 3
+
+        return marketup
+    except:
+        return 0
+
+def _safe_float_conversion(value, default=0.0):
+    try:
+        return float(value)
+    except ValueError:
+        return default
 
 def update_document_with_products(document, df, categoryList):
     MAX_ROWS_PER_PAGE = 55  # Max rows on one side before switching to the other side
@@ -262,8 +284,17 @@ def update_document_with_products(document, df, categoryList):
                     table.rows[current_row_count].cells[cell_index_base + 2].text = concatenated_text
 
                 
-                # Assign other product details to subsequent cells
-                table.rows[current_row_count].cells[cell_index_base + 3].text = str(row['price']) if row['price'] is not None else ""
+                #markup algorithm
+                price = ""
+                if row['price'] is not None or row['price'] != "":
+                    markup = _getMarkUp(row['price'])
+                    price = str(_safe_float_conversion(row['price']) + markup)
+                
+                if price == "0.0":
+                    price = ""
+
+                # Assign other product details to subsequent cell
+                table.rows[current_row_count].cells[cell_index_base + 3].text = price
                 table.rows[current_row_count].cells[cell_index_base + 4].text = str(row['weightUnit']) if row['weightUnit'] is not None else ""
                 table.rows[current_row_count].cells[cell_index_base + 5].text = str(row['warehouse']) if row['warehouse'] is not None else ""
 
@@ -327,6 +358,8 @@ def _convert_to_pdf(input_file, output_dir):
         print("Conversion successful!")
     except subprocess.CalledProcessError as e:
         print("Conversion failed:", e)
+
+
 
 def _convert_docx_to_pdf(api_key,input_path) -> str:
     # Initialize the ILovePdf object with your project's public API key
@@ -462,6 +495,6 @@ def createQuotation(connection,effectiveDate:datetime,days: int = 2) -> str :
     path =  _convert_docx_to_pdf(api_key, docx_file )
     print(path)
 
-    # Return a path relative to the static directory
-    return path
+    #Return a path relative to the static directory
+    return None
 
