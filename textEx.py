@@ -329,6 +329,7 @@ def _add_tag_to_last_row(target_file: str, new_tag: str):
         with open(target_file, mode='a', newline='') as file:
             writer = csv.writer(file)
             # Append a new row with the new tag
+            writer.writerow([])
             writer.writerow([new_tag])
         print("Tag added successfully to the last row.")
     except FileNotFoundError:
@@ -349,14 +350,21 @@ def _add_tag_to_last_row_category(target_file: str, new_tag: str,category):
         with open(target_file, mode='a', newline='') as file:
             writer = csv.writer(file)
             # Append a new row with the new tag
-            writer.writerow([new_tag])
+            writer.writerow([])
+            writer.writerow([category,new_tag])
         print("Tag added successfully to the last row.")
     except FileNotFoundError:
         print("File not found. Please check the path.")
     except Exception as e:
         print(f"An error occurred: {e}")
 
-def addCommonName(target_file: str, newCommonName: str, oldCommonName = None, category = "Beef") -> bool:
+def _canFindTag(rowNum:int)->bool :
+    if rowNum == -1:
+        return False;
+    else:
+        return True
+
+def addCommonName(target_file: str, newCommonName: str, oldCommonName = None, category = None) -> bool:
 
     dir = os.getcwd() + "/conversion_table/"
     if target_file == "BRAND":
@@ -379,33 +387,42 @@ def addCommonName(target_file: str, newCommonName: str, oldCommonName = None, ca
         raise TypeError("Undefined type: " + target_file)
         return False
     
+
+
     if oldCommonName is not None:
-        rowNum = _find_tag_in_csv(dir,oldCommonName) 
-        if rowNum == -1:
+        rowNum = _find_tag_in_csv(dir,oldCommonName) # find the corresponding row of the current tag
+        if not _canFindTag(rowNum):
             print("找不到所需的標籤")
             return False
         else: #old name does exist
             newRowNum = _find_tag_in_csv(dir,newCommonName) 
             
-            if newRowNum == -1:
+            if not _canFindTag(newRowNum):
                 _add_tag_to_row(dir,rowNum,newCommonName)
                 print("tag successfully added")
-            
                 return True
             else:
                 print("標籤已經存在a")
                 return False
     else:
         rowNum = _find_tag_in_csv(dir,newCommonName)
-        print(rowNum)
-        if rowNum == -1: # cannot found tag
+        
+        if not _canFindTag(rowNum): # cannot found tag
+
             if target_file != "PRODUCT":
                 _add_tag_to_last_row(dir,newCommonName)
                 return True
-            else:
-                _add_tag_to_last_row_category(dir,category,newCommonName)
-                return True
+            else: # is product
+                if category is not None:
+                    _add_tag_to_last_row_category(dir,category,newCommonName)
+                    return True
+                else:
+                    print("缺少category")
+                    return False
         else:
             print("標籤已經存在b")
             return False
+        
+
+
 
