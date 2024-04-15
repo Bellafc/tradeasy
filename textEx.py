@@ -86,7 +86,7 @@ def _compareString_v2(stringValue: str, textlist: list) -> (bool, bool):
         if text_lower in stringValueLower:
             partial_match = True
             # Check for exact matches by splitting words and checking
-            if text_lower == stringValueLower or f" {stringValueLower} " in f" {text_lower} " :
+            if text_lower == stringValueLower or f" {text_lower} " in f" {stringValueLower} "  :
                 exact_match = True
                 break
     return partial_match, exact_match
@@ -96,10 +96,11 @@ def _match_v2(concatText: str, dataDict: dict) -> str:
     best_match = None
     for key, value in dataDict.items():
         partial_match, exact_match = _compareString_v2(concatTextLower, [key] + list(value) )
-        
+
         # Prioritize exact matches first
         if exact_match:
-            if key.lower() == concatTextLower:
+            
+            if key.lower() in concatTextLower:
                 return key  # Return immediately if the key itself is an exact match
             if not best_match:
                 best_match = key
