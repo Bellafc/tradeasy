@@ -2,6 +2,7 @@ import pandas as pd
 import os
 import re
 import regex
+import csv
 
 
 def _readData(targetTable :str,method:str) -> dict:
@@ -247,4 +248,163 @@ def getWeightUnit(concatText:str) -> str:
         print("no _match is found")
         return "lb"
     return weightUnit[-1]
+
+def _add_tag_to_row(target_file: str, row_number: int, new_tag: str):
+    """
+    Adds a new tag to the last column of a specific row in a CSV file, filling any empty columns first.
+    
+    Args:
+    target_file (str): The path to the CSV file.
+    row_number (int): The row number (1-based index) to modify.
+    new_tag (str): The tag to add to the last column of the specified row.
+    """
+    try:
+        # Read all rows from the file
+        with open(target_file, mode='r', newline='') as file:
+            rows = list(csv.reader(file))
+
+        # Check if the specified row number is within the range of existing rows
+        if 0 < row_number <= len(rows):
+            # Target the specific row (convert row_number from 1-based to 0-based)
+            target_row = rows[row_number - 1]
+
+            # Find the first empty column in the row, if any
+            try:
+                empty_index = target_row.index('')
+                target_row[empty_index] = new_tag  # Fill the first empty column found
+            except ValueError:
+                # No empty columns found, append new tag to the end
+                target_row.append(new_tag)
+            
+            # Write the modified rows back to the file
+            with open(target_file, mode='w', newline='') as file:
+                writer = csv.writer(file)
+                writer.writerows(rows)
+            print("Tag added successfully.")
+        else:
+            print(f"Row {row_number} does not exist in the file.")
+    except FileNotFoundError:
+        print("File not found.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+def _find_tag_in_csv(target_file: str, tag: str) -> int:
+    """
+    Search for a tag in a CSV file. Returns the row number where the tag is found.
+    If the tag is not found, returns -1.
+
+    Args:
+    target_file (str): The path to the CSV file.
+    tag (str): The tag to search for.
+
+    Returns:
+    int: The row number of the found tag, or -1 if the tag is not found.
+    """
+    try:
+        with open(target_file, mode='r', newline='') as file:
+            reader = csv.reader(file)
+            # Iterate through rows in the file
+            for index, row in enumerate(reader):
+                if tag in row:  # Check if tag is in any column of the row
+                    return index + 1  # Return row number (1-based index)
+    except FileNotFoundError:
+        print("File not found.")
+        return -1  # Optionally, could raise an exception or handle differently
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return -1
+
+    return -1  # Return -1 if the tag is not found in any row
+
+def _add_tag_to_last_row(target_file: str, new_tag: str):
+    """
+    Appends a new tag to the last row of a CSV file.
+
+    Args:
+    target_file (str): The path to the CSV file.
+    new_tag (str): The tag to append to the last row.
+    """
+    try:
+        # Open the file in append mode
+        with open(target_file, mode='a', newline='') as file:
+            writer = csv.writer(file)
+            # Append a new row with the new tag
+            writer.writerow([new_tag])
+        print("Tag added successfully to the last row.")
+    except FileNotFoundError:
+        print("File not found. Please check the path.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+def _add_tag_to_last_row_category(target_file: str, new_tag: str,category):
+    """
+    Appends a new tag to the last row of a CSV file.
+
+    Args:
+    target_file (str): The path to the CSV file.
+    new_tag (str): The tag to append to the last row.
+    """
+    try:
+        # Open the file in append mode
+        with open(target_file, mode='a', newline='') as file:
+            writer = csv.writer(file)
+            # Append a new row with the new tag
+            writer.writerow([new_tag])
+        print("Tag added successfully to the last row.")
+    except FileNotFoundError:
+        print("File not found. Please check the path.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+def addCommonName(target_file: str, newCommonName: str, oldCommonName = None, category = "Beef") -> bool:
+
+    dir = os.getcwd() + "/conversion_table/"
+    if target_file == "BRAND":
+        dir += "brand_conversion.csv"
+    elif target_file == "COUNTRY":
+        dir += "country_conversion.csv"
+    elif target_file == "SPEC":
+        dir += "spec_conversion.csv"
+    elif target_file == "PRODUCT":
+        dir += "product_conversion.csv"
+    elif target_file == "WAREHOUSE":
+        dir += "warehouse_conversion.csv"
+    elif target_file == "SUPPLIER":
+        dir += "supplier_conversion.csv"
+    elif target_file == "PACKING":
+        dir += "packing_conversion.csv"
+    elif target_file == "WEIGHTUNIT":
+        dir += "weightunit_conversion.csv"
+    else:
+        raise TypeError("Undefined type: " + target_file)
+        return False
+    
+    if oldCommonName is not None:
+        rowNum = _find_tag_in_csv(dir,oldCommonName) 
+        if rowNum == -1:
+            print("找不到所需的標籤")
+            return False
+        else: #old name does exist
+            newRowNum = _find_tag_in_csv(dir,newCommonName) 
+            
+            if newRowNum == -1:
+                _add_tag_to_row(dir,rowNum,newCommonName)
+                print("tag successfully added")
+            
+                return True
+            else:
+                print("標籤已經存在")
+                return False
+    else:
+        rowNum = _find_tag_in_csv(dir,newCommonName)
+        if rowNum != -1: # cannot found tag
+            if target_file != "PRODUCT":
+                _add_tag_to_last_row(dir,newCommonName)
+                return True
+            else:
+                _add_tag_to_last_row_category(dir,category,newCommonName)
+                return True
+        else:
+            print("標籤已經存在")
+            return False
 

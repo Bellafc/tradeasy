@@ -43,6 +43,7 @@ welcome_message = """
 歡迎使用本系統，請根據下列指令操作以開始：
 
 #Update：將最新的報價數據更新至資料庫。
+#Update Tag:將最新的產品標籤更新至資料庫
 #Gen Quote：此指令將生成最新的報價PDF檔案。
 #Get PDF：此指令返回最新的PDF報價文件。
 #Quote ID：根據產品編號返回相關的產品詳情。
@@ -68,8 +69,7 @@ def _formatString(concatText:str,supplier:str,effectiveDate:str) -> tuple:
 
     # Split the string into two halves
     first_half = concatText[:midpoint]
-    second_half = concatText[midpoint:]    
-    
+    second_half = concatText[midpoint:]       
     brand = textEx.getBrand(concatText)
     country = textEx.getCountry(first_half)
     product = textEx.getProduct(concatText)
@@ -89,7 +89,7 @@ def _formatString(concatText:str,supplier:str,effectiveDate:str) -> tuple:
         return None
     weightUnit = textEx.getWeightUnit(second_half)
     
-    spec = textEx.getSpec(concatText.split('$')[0])
+    spec = textEx.getSpec(concatText)
 
     # Sort 'spec' in alphabetical order
     spec.sort()
@@ -218,6 +218,10 @@ def receive_whatsapp_message():
             msg.body("請提供供應商")
             user_states[sender] = 'awaiting_supplier'
             user_data[sender] = {}
+        elif incoming_msg.upper() == "#Update Tag".upper():
+            msg.body("請提供需要更新的標籤數據庫（conversion table）\n-BRAND\n-COUNTRY\n-PRODUCT\n-SPEC\n-WAREHOUSE\n-SUPPLIER\n-PACKING\n-WEIGHTUNIT")
+            user_states[sender] = 'awaiting_conversion_table'
+            user_data[sender] = {}
         elif incoming_msg.upper() == '#get PDF'.upper():
             pdf_path = _find_latest_pdf_directory("static/pdfs")
             resp.message("PDF報價單發送中...請稍候片刻...")
@@ -245,7 +249,37 @@ def receive_whatsapp_message():
 
         else:
             msg.body(welcome_message)
-    
+    elif user_states[sender] == 'awaiting_conversion_table':
+        if incoming_msg.upper() in ["BRAND","COUNTRY","PRODUCT","SPEC","WAREHOUSE","SUPPLIER","PACKING","WEIGHTUNIT"]:
+            user_data[sender]['conversion_table'] = incoming_msg.upper()  # Store the supplier name
+            user_states[sender] = 'awaiting_conversion_table_update'
+            msg.body("請提供有關標籤的數據\n 新標籤<空格>舊標籤<空格>CATEGORY")
+        else:
+            msg.body("對不起,請重新輸入")
+    elif user_states[sender] == 'awaiting_conversion_table_update':
+        common_names = incoming_msg.upper().strip().split(" ")
+        rows = incoming_msg.strip().split('\n')
+        table_name = user_data[sender]['conversion_table']
+        for row in rows:
+            if not row.strip():
+                continue
+            try:
+                if len(common_names) == 1:
+                    textEx.addCommonName(table_name,common_names[0])
+                elif len(common_names) == 2 and table_name != "PRODUCT":
+                    textEx.addCommonName(table_name,common_names[0],common_names[1])
+                elif len(common_names) == 3 and table_name == "PRODUCT" :
+                    textEx.addCommonName(table_name,common_names[0],common_names[1],common_names[2])
+                else:
+                    msg.body("對不起,請重新輸入")
+                
+                del user_states[sender]
+                del user_data[sender]['conversion_table']
+                msg.body("已成功更新...")
+            except:
+                msg.body("對不起,請重新輸入 EXCEPTION")
+
+
 
     elif user_states[sender] == 'awaiting_supplier':
         user_data[sender]['supplier'] = incoming_msg  # Store the supplier name
