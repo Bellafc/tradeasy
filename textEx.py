@@ -393,11 +393,12 @@ def addCommonName(target_file: str, newCommonName: str, oldCommonName = None, ca
             
                 return True
             else:
-                print("標籤已經存在")
+                print("標籤已經存在a")
                 return False
     else:
         rowNum = _find_tag_in_csv(dir,newCommonName)
-        if rowNum != -1: # cannot found tag
+        print(rowNum)
+        if rowNum == -1: # cannot found tag
             if target_file != "PRODUCT":
                 _add_tag_to_last_row(dir,newCommonName)
                 return True
@@ -405,6 +406,6 @@ def addCommonName(target_file: str, newCommonName: str, oldCommonName = None, ca
                 _add_tag_to_last_row_category(dir,category,newCommonName)
                 return True
         else:
-            print("標籤已經存在")
+            print("標籤已經存在b")
             return False
 
