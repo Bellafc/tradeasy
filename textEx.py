@@ -77,6 +77,37 @@ def _compareString(stringValue: str, textlist: list) -> bool:
             return True
     return False
 
+def _compareString_v2(stringValue: str, textlist: list) -> (bool, bool):
+    stringValueLower = stringValue.lower()
+    partial_match = False
+    exact_match = False
+    for text in textlist:
+        text_lower = str(text).lower()
+        if text_lower in stringValueLower:
+            partial_match = True
+            # Check for exact matches by splitting words and checking
+            if text_lower == stringValueLower or f" {text_lower} " in f" {stringValueLower} "  :
+                exact_match = True
+                break
+    return partial_match, exact_match
+
+def _match_v2(concatText: str, dataDict: dict) -> str:
+    concatTextLower = concatText.lower()
+    best_match = None
+    for key, value in dataDict.items():
+        partial_match, exact_match = _compareString_v2(concatTextLower, [key] + list(value) )
+        
+        # Prioritize exact matches first
+        if exact_match:
+            if key.lower() == concatTextLower:
+                return key  # Return immediately if the key itself is an exact match
+            if not best_match:
+                best_match = key
+        elif partial_match and not best_match:
+            best_match = key  # Consider partial matches if no exact match has been found yet
+
+    return best_match
+
 def _match(concatText: str, dataDict: dict) -> str:
     concatTextLower = concatText.lower()  # Convert concatText to lowercase for case-insensitive comparison
     for key, value in dataDict.items():
@@ -98,7 +129,7 @@ def getBrand(concatText:str) -> str :
     # this function return the strandard brand name 
     standardName = ""
     brandDict = _readData("BRAND","LOCAL")
-    standardName = _match(concatText,brandDict)
+    standardName = _match_v2(concatText,brandDict)
 
     if standardName == "":
         print("no _match is found :" + concatText)
@@ -111,7 +142,7 @@ def getBrand(concatText:str) -> str :
 def getCountry(concatText:str) -> str :
     standardCountry = ""
     CountryDict = _readData("COUNTRY","LOCAL")
-    standardCountry = _match(concatText,CountryDict)
+    standardCountry = _match_v2(concatText,CountryDict)
 
     if standardCountry == "":
         print("no _match is found :" + concatText)
@@ -129,7 +160,7 @@ def getSpec(concatText:str) -> list:
 def getProduct(concatText:str) -> str:
     standardProduct = ""
     productDict = _readData("PRODUCT","LOCAL")
-    standardProduct = _match(concatText, productDict)
+    standardProduct = _match_v2(concatText, productDict)
     if standardProduct == "":
         print("no _match is found")
     if standardProduct is not None:
@@ -163,7 +194,7 @@ def getSupplier(concatText:str) ->str:
 
     supplier = ""
     supplierDict = _readData("SUPPLIER","LOCAL")
-    supplier = _match(concatText,supplierDict)
+    supplier = _match_v2(concatText,supplierDict)
     if supplier == "":
         print("no _match is found")
     return supplier
@@ -173,7 +204,7 @@ def getCategory(concatText:str) -> str:
     product = getProduct(concatText)
     if product != "":
         categoryDict = _readData("CATEGORY","LOCAL")
-        category = _match(product,categoryDict)
+        category = _match_v2(product,categoryDict)
         if category is not None:
             return category.upper()
         
@@ -190,7 +221,7 @@ def getPacking(concatText:str) ->str:
 
     packing = ""
     packingDict = _readData("PACKING","LOCAL")
-    packing = _match(concatText,packingDict)
+    packing = _match_v2(concatText,packingDict)
     if packing == None:
         print("no _match is found")
     return packing
