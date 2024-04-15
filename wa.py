@@ -269,6 +269,8 @@ def receive_whatsapp_message():
                     textEx.addCommonName(table_name,common_names[0])
                 elif len(common_names) == 2 and table_name != "PRODUCT":
                     textEx.addCommonName(table_name,common_names[0],common_names[1])
+                elif len(common_names) == 2 and table_name == "PRODUCT":
+                    textEx.addCommonName(table_name,common_names[0],None,common_names[1])
                 elif len(common_names) == 3 and table_name == "PRODUCT" :
                     textEx.addCommonName(table_name,common_names[0],common_names[1],common_names[2])
                 else:
