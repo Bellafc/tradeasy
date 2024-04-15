@@ -86,7 +86,7 @@ def _compareString_v2(stringValue: str, textlist: list) -> (bool, bool):
         if text_lower in stringValueLower:
             partial_match = True
             # Check for exact matches by splitting words and checking
-            if text_lower == stringValueLower or f" {text_lower} " in f" {stringValueLower} "  :
+            if text_lower == stringValueLower or f" {stringValueLower} " in f" {text_lower} " :
                 exact_match = True
                 break
     return partial_match, exact_match
