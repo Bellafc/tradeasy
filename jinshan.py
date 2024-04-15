@@ -139,7 +139,7 @@ def getJinShanQuote(df: pd.DataFrame) -> pd.DataFrame:
                 df['effectiveDate'][i]=df['effectiveDate'][i]
     df[['spec1', 'spec2', 'spec3', 'spec4', 'spec5', 'spec6']] = df['specs'].apply(lambda x: pd.Series(_specToList(x)))
     df['price'] = df['單價'].str.replace('$','').replace(" ","")
-    df['weightUnit'] = df['單位']
+    df['weightUnit'] = df['單位'].apply(textEx.getWeightUnit)
     df['warehouse']=df['倉位'].apply(textEx.getWarehoue)
     df['notes']= None
 
