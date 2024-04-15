@@ -38,8 +38,10 @@ def _setColumn(document: Document, category: str):
     # Assuming _set_cell_text_and_alignment and _set_vertical_alignment are previously defined
 
     table = document.add_table(rows=1, cols=12)
+    #table.allow_autofit
+
     column_widths = [Cm(1),Cm(1), Cm(11), Cm(1), Cm(1), Cm(1),Cm(1), Cm(1), Cm(11), Cm(1), Cm(1), Cm(1)]
-    cell_texts = ['ID','重量', '產品', '單價', '單位', '倉位', 'ID','重量', '產品', '單價', '單位', '倉位']
+    cell_texts = ['ID','重量', '  產品  ', '單價', '單位', '倉位', 'ID','重量', '  產品  ', '單價', '單位', '倉位']
     
     for row in table.rows:
         for idx, cell in enumerate(row.cells):
@@ -101,6 +103,7 @@ def _filter_df(df, category):
     return filtered_df
 
 def _set_paragraph_spacing_to_zero(paragraph):
+    paragraph.style = 'Body Text'
     paragraph.paragraph_format.space_before = Pt(0)
     paragraph.paragraph_format.space_after = Pt(0)
     paragraph.paragraph_format.line_spacing = 1
@@ -126,7 +129,7 @@ def _apply_top_bottom_borders_to_cell(cell):
         border_element.set(qn('w:val'), 'nil')
         tcPr.append(border_element)
 
-def _set_cell_text(cell, text, font_size=9):
+def _set_cell_text(cell, text, font_size=8):
     """Set the text for a cell with a specific font size."""
     paragraph = cell.paragraphs[0] if cell.paragraphs else cell.add_paragraph()
     run = paragraph.add_run(text)
@@ -213,9 +216,8 @@ def update_document_with_products(document, df, categoryList):
     MAX_ROWS_PER_PAGE = 55  # Max rows on one side before switching to the other side
     
     for category in categoryList:
-        table = _setColumn(document, category )
         
-        document.add_page_break() 
+        table = _setColumn(document, category )
         
         filtered_df = _filter_df(df, category)
         
@@ -267,13 +269,13 @@ def update_document_with_products(document, df, categoryList):
                     concatenated_text += cell_text + " " if col != 'packing' else cell_text
                     word_count += len(cell_text)
                     
-                if word_count > 20 and left_side:
+                if word_count > 18 and left_side:
                     part1, part2 = _split_text_evenly(concatenated_text)
                     table.rows[current_row_count].cells[cell_index_base + 2].text = part1
                     _table_add_row(table)
                     table.rows[current_row_count + 1].cells[cell_index_base + 2].text = part2
                     left_row_count += 1
-                elif(word_count > 20 and left_side != True):
+                elif(word_count > 18 and left_side != True):
                     part1, part2 = _split_text_evenly(concatenated_text)
                     table.rows[current_row_count].cells[cell_index_base + 2].text = part1
                     table.rows[current_row_count + 1].cells[cell_index_base + 2].text = part2
@@ -308,6 +310,7 @@ def update_document_with_products(document, df, categoryList):
             if left_row_count >= MAX_ROWS_PER_PAGE and right_row_count >= MAX_ROWS_PER_PAGE:
                  
                 table =_setColumn(document,category)
+                document.add_page_break() 
                 left_row_count = 0
                 right_row_count = 0
                 left_side = True
@@ -401,7 +404,7 @@ def createQuotation(connection,effectiveDate:datetime,days: int = 2) -> str :
     # Set font
     style = document.styles['Normal']
     style.font.name = 'GungSeo'
-    style.font.size = Pt(9)
+    style.font.size = Pt(8)
     style.font.color.rgb = RGBColor(0, 0, 0) 
     section = document.sections[0]  # Assuming you're changing the first section
     section.page_height = Mm(297)
@@ -473,11 +476,15 @@ def createQuotation(connection,effectiveDate:datetime,days: int = 2) -> str :
 
     # Iterate through all tables and their cells
     for table in document.tables:
+        
         for row in table.rows:
             for cell in row.cells:
                 for paragraph in cell.paragraphs:
+                    paragraph.style = document.styles['Normal']
                     _set_paragraph_spacing_to_zero(paragraph)
     
+    
+
 
     static_dir = os.path.join(os.getcwd(), 'static', 'pdfs')
     
@@ -493,7 +500,7 @@ def createQuotation(connection,effectiveDate:datetime,days: int = 2) -> str :
     api_key = 'project_public_dd58a2ab023f0c665dc5749a8f0931e0_Pl0dh0a277b8551bb9cdf01e043af64ce0304'
 
     path =  _convert_docx_to_pdf(api_key, docx_file )
-    print(path)
+    #print(path)
 
     #Return a path relative to the static directory
     return None
