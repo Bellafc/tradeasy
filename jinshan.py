@@ -47,6 +47,48 @@ def readAllJinShanPDF(dir:str) -> pd.DataFrame:
 
     return df_cleaned
 
+
+def readJinShanPDF(dir:str) -> pd.DataFrame:
+    column_names = ['重量', '貨名', '單價', '單位', '倉位', '重量', '貨名', '單價', '單位', '倉位', '重量', '貨名', '單價', '單位', '倉位']
+
+    all_pages_df = pd.DataFrame(columns=column_names)
+    all_pages_df.insert(5, 'date',None) 
+    all_pages_df.insert(11, 'date2',None)  
+    all_pages_df.insert(17, 'date3', None) 
+
+  
+    file_path = dir
+
+    with pdfplumber.open(file_path) as pdf:
+        for page in pdf.pages:
+            table = page.extract_table()
+            if table:
+                # 动态获取列名
+                try:
+                    df = pd.DataFrame(table[1:], columns=column_names)
+                    df.insert(5, 'date', os.path.basename(file_path)) 
+                    df.insert(11, 'date2', os.path.basename(file_path)) 
+                    df.insert(17, 'date3', os.path.basename(file_path))
+                except:
+                    df=pd.DataFrame(table[1:])
+                try:
+                    all_pages_df = pd.concat([all_pages_df, df], ignore_index=True)
+                except:
+                    print(f"Error merging data from {os.path.basename(file_path)},{page}")
+                    
+    df1 = all_pages_df.iloc[:, :6]
+    df2 = all_pages_df.iloc[:, 6:12]
+    df3 = all_pages_df.iloc[:, 12:18]
+    df2.columns = df1.columns
+    df3.columns = df1.columns
+    df_concatenated_corrected = pd.concat([df1, df2, df3], axis=0).reset_index(drop=True)
+    df_concatenated_corrected=df_concatenated_corrected.dropna()
+    df = df_concatenated_corrected.applymap(lambda x: x.strip() if isinstance(x, str) else x).replace('', np.nan)
+    df_cleaned = df.dropna(subset=["貨名"], how='any').reset_index(drop=True)
+    df_cleaned = df_cleaned.applymap(lambda x: x.lower() if isinstance(x, str) else x)
+
+    return df_cleaned
+
 def _specToList(spec :list) -> list:
 
     # Sort 'spec' in alphabetical order
@@ -84,7 +126,7 @@ def getJinShanQuote(df: pd.DataFrame) -> pd.DataFrame:
     df['productTag'] = df['貨名'].apply(textEx.getProduct)
     df['supplier'] = '金山'
     df['category'] = df['貨名'].apply(textEx.getCategory)
-    df['packing']=df['重量']
+    df['packing']=df['重量'].apply(textEx.getPacking)
     df['origin'] = df['貨名'].apply(textEx.getCountry)
     df['effectiveDate'] = df['date'].str.replace('.pdf', '').replace(" ", "-").replace("-updated","")
     for i in range(len(df)):
