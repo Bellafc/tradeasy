@@ -446,7 +446,7 @@ def addCommonName(target_file: str, newCommonName: str, oldCommonName = None, ca
                 return True
             else: # is product
                 if category is not None:
-                    _add_tag_to_last_row_category(dir,category,newCommonName)
+                    _add_tag_to_last_row_category(dir,newCommonName,category)
                     return True
                 else:
                     print("缺少category")
