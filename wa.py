@@ -89,7 +89,8 @@ def _formatString(concatText:str,supplier:str,effectiveDate:str) -> tuple:
         return None
     weightUnit = textEx.getWeightUnit(second_half)
     
-    spec = textEx.getSpec(concatText)
+    
+    spec = textEx.getSpec(concatText.split('$')[0])
 
     # Sort 'spec' in alphabetical order
     spec.sort()
