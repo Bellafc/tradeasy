@@ -389,7 +389,7 @@ def _convert_docx_to_pdf(api_key,input_path) -> str:
     target_dir = os.path.join(os.getcwd(), 'static', 'pdfs')
     filename_without_ext, file_ext = os.path.splitext(filename)
     current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    new_filename = f"新樂總批發報價單_{current_time}{file_ext}"
+    new_filename = f"SUNLOK_WHOLESALES_{current_time}{file_ext}"
     new_target_file_path = os.path.join(target_dir, new_filename)
     shutil.move(os.path.join(os.getcwd(), filename), new_target_file_path)
     
@@ -446,7 +446,7 @@ def createQuotation(connection,effectiveDate:datetime,days: int = 2) -> str :
     # Prepare the header text with placeholders for tabs
     today_date = datetime.today().strftime('%Y-%m-%d')  # Format today's date
     header_text = (
-        '上水龍豐花園30號地舖|tradeasychain@gmail.com| [落單]張小姐 6045 7604/曾先生 5977 9085\n'
+        '上水龍豐花園30號地舖|tradeasychain@gmail.com| [落單只能Whatsapp]張小姐 6045 7604/[急事]曾先生 5977 9085\n'
         '*貨品價格如有更改,恕不另行通告,價格為入倉提貨價,如有疑問請跟營業員聯絡\n'
         '*本公司只提供 <其士倉> 提貨送貨服務 5件起送 HKD$20/件 <其他倉> 10件起送 HKD$20/件\n'
         '*本公司暫不設加工服務\n'
