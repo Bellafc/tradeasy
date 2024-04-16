@@ -389,7 +389,7 @@ def _convert_docx_to_pdf(api_key,input_path) -> str:
     target_dir = os.path.join(os.getcwd(), 'static', 'pdfs')
     filename_without_ext, file_ext = os.path.splitext(filename)
     current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    new_filename = f"{filename_without_ext}_{current_time}{file_ext}"
+    new_filename = f"新樂總批發報價單_{current_time}{file_ext}"
     new_target_file_path = os.path.join(target_dir, new_filename)
     shutil.move(os.path.join(os.getcwd(), filename), new_target_file_path)
     
