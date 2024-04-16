@@ -34,8 +34,15 @@ def _set_vertical_alignment(cell, alignment):
 
 
 def _setColumn(document: Document, category: str):
-    document.add_paragraph(category)
+    paragraph = document.add_paragraph(category)
     # Assuming _set_cell_text_and_alignment and _set_vertical_alignment are previously defined
+    for run in paragraph.runs:
+        run.font.size = Pt(15)
+
+# If the paragraph is empty (common when just created), you must add a run manually.
+    if not paragraph.runs:
+        run = paragraph.add_run(category)
+        run.font.size = Pt(15)
 
     table = document.add_table(rows=1, cols=12)
     #table.allow_autofit
@@ -213,7 +220,7 @@ def _safe_float_conversion(value, default=0.0):
         return default
 
 def update_document_with_products(document, df, categoryList):
-    MAX_ROWS_PER_PAGE = 55  # Max rows on one side before switching to the other side
+    MAX_ROWS_PER_PAGE = 48  # Max rows on one side before switching to the other side
     
     for category in categoryList:
         
@@ -308,9 +315,9 @@ def update_document_with_products(document, df, categoryList):
 
             # Add a page break and reset counters if the current side is fully filled
             if left_row_count >= MAX_ROWS_PER_PAGE and right_row_count >= MAX_ROWS_PER_PAGE:
-                 
+                
                 table =_setColumn(document,category)
-                document.add_page_break() 
+                
                 left_row_count = 0
                 right_row_count = 0
                 left_side = True
@@ -412,9 +419,9 @@ def createQuotation(connection,effectiveDate:datetime,days: int = 2) -> str :
 
     # Optional: Set margins if you want
     section.top_margin = Inches(0.01)
-    section.bottom_margin = Inches(0.25)
-    section.left_margin = Inches(0.25)
-    section.right_margin = Inches(0.25)
+    section.bottom_margin = Inches(0.01)
+    section.left_margin = Inches(0.1)
+    section.right_margin = Inches(0.1)
 
     # Add header
     header = document.sections[0].header
@@ -441,7 +448,7 @@ def createQuotation(connection,effectiveDate:datetime,days: int = 2) -> str :
     header_text = (
         '上水龍豐花園30號地舖|tradeasychain@gmail.com| [落單]張小姐 6045 7604/曾先生 5977 9085\n'
         '*貨品價格如有更改,恕不另行通告,價格為入倉提貨價,如有疑問請跟營業員聯絡\n'
-        '*本公司只提供 <其士倉> 提貨送貨服務 5件起送 HKD$20/件\n'
+        '*本公司只提供 <其士倉> 提貨送貨服務 5件起送 HKD$20/件 <其他倉> 10件起送 HKD$20/件\n'
         '*本公司暫不設加工服務\n'
         '*請提前落<隔夜單>以免提貨出現問題 截單時間為3:00pm\t打印日期：{}'.format(today_date)
     )
@@ -493,7 +500,7 @@ def createQuotation(connection,effectiveDate:datetime,days: int = 2) -> str :
 
     pdf_file = os.path.join(os.getcwd(), 'static')
 
-    docx_file = os.path.join(static_dir, 'demo2.docx')
+    docx_file = os.path.join(static_dir, 'quotation.docx')
     document.save(docx_file)
     pdf_file = os.path.join(static_dir, 'demo')
 

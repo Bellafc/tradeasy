@@ -241,7 +241,7 @@ def receive_whatsapp_message():
             
             try:
                 pdf_path = pdfQuoteGenerator.createQuotation(connection, current_datetime, days=3)
-                msg.body("PDF報價單生成已完成,請輸入‘get quote’查閱報價...")
+                msg.body("PDF報價單生成已完成,請輸入'get quote'查閱報價...")
 
             except Exception as e:
                 print(f"An error occurred: {e}")

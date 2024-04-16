@@ -15,7 +15,7 @@ def create_table(connection):
             productName VARCHAR(255),
             productTag VARCHAR(255),
             supplier VARCHAR(255),
-            category ENUM('Beef', 'Pork', 'Chicken', 'Poultry', 'Lamb', 'Fish', 'Seafood', 'Shrimp', 'Meatballs', 'Premade', 'Vegetables', 'Retail', 'Others'),
+            category ENUM('WAGYU','Beef', 'Pork', 'Chicken', 'Poultry', 'Lamb', 'Fish', 'Seafood', 'Shrimp', 'Meatballs', 'Premade', 'Vegetables', 'Retail', 'Others'),
             packing VARCHAR(255),
             origin VARCHAR(255),
             brand VARCHAR(255),
