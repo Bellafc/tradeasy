@@ -47,7 +47,10 @@ welcome_message = """
 #Gen Quote：此指令將生成最新的報價PDF檔案。
 #Get PDF：此指令返回最新的PDF報價文件。
 #Quote ID：根據產品編號返回相關的產品詳情。
-#Exit：推出系統
+#Exit：退出系統
+#Sunlok quote：新樂報價單
+#Sun lok PDF:新樂報價單PDF
+#connect sql: reconnect to sql
 
 
 請輸入您希望執行的操作指令：
@@ -241,15 +244,49 @@ def receive_whatsapp_message():
             
             try:
                 pdf_path = pdfQuoteGenerator.createQuotation(connection, current_datetime, days=3)
-                msg.body("PDF報價單生成已完成,請輸入'get quote'查閱報價...")
+                msg.body("PDF報價單生成已完成,請輸入‘get quote’查閱報價...")
 
             except Exception as e:
                 print(f"An error occurred: {e}")
-      
+        elif incoming_msg.upper() == "#Sunlok quote".upper():
+            resp.message("Generating Quotation PDF...")
+            current_datetime = datetime.now()
+            
+            try:
+                pdf_path = pdfQuoteGenerator.createQuotation_sunlok(connection, current_datetime)
+                msg.body("PDF報價單生成已完成,請輸入‘get quote’查閱報價...")
+
+            except Exception as e:
+                print(f"An error occurred: {e}")
+        elif incoming_msg.upper() == "#Sun lok PDF".upper():
+            pdf_path = _find_latest_pdf_directory("static/sunlok")
+            resp.message("PDF報價單發送中...請稍候片刻...")
+            ngrok_base_url = 'https://b820-54-153-171-62.ngrok-free.app'  # Update with your actual ngrok URL
+            url = f'{ngrok_base_url}{pdf_path}'
+            print(url) 
+            resp.message(url)
+            msg.media(url)  
+        elif incoming_msg.upper() == "#connect sql".upper():
+            try:
+                connection = mysql.connector.connect(
+                    host='quote.c9ac6sewqau0.ap-southeast-2.rds.amazonaws.com',
+                    database='quote',
+                    user='admin',
+                    password='admin123'
+                )
+                if connection.is_connected():
+                    db_Info = connection.get_server_info()
+                    print("Connected to MySQL Server version ", db_Info)
+                    resp.message("Connected to MySQL Server version ", db_Info)
+            except Error as e:
+                print("Error while connecting to MySQL", e)
+                resp.message("Error while connecting to MySQL", e)
+
 
 
         else:
             msg.body(welcome_message)
+    
     elif user_states[sender] == 'awaiting_conversion_table':
         if incoming_msg.upper() in ["BRAND","COUNTRY","PRODUCT","SPEC","WAREHOUSE","SUPPLIER","PACKING","WEIGHTUNIT"]:
             user_data[sender]['conversion_table'] = incoming_msg.upper()  # Store the supplier name
@@ -328,7 +365,7 @@ def receive_whatsapp_message():
                 user_states[sender] = 'awaiting_PDF_quotation'
 
         else:
-            msg.body("Please specify '文字報價' or 'PDF報價'.")
+            msg.body("對不起,請重新輸入")
     elif user_states[sender] == 'awaiting_word_quotation' and recievedQuotation == False:
         current_datetime = datetime.now()
         datetime_str = current_datetime.strftime("%Y-%m-%d %H:%M:%S")

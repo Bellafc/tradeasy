@@ -400,6 +400,35 @@ def _convert_docx_to_pdf(api_key,input_path) -> str:
 
     return os.path.join('static', 'pdfs',new_filename)
 
+def _convert_docx_to_pdf_sunlok(api_key,input_path) -> str:
+    # Initialize the ILovePdf object with your project's public API key
+    ilovepdf = ILovePdf(api_key, verify_ssl=True)
+    
+    # Create a new "officepdf" task
+    task = ilovepdf.new_task('officepdf')
+    
+    # Add the .docx file for conversion
+    task.add_file(input_path)
+    
+    # Execute the task: Convert .docx to .pdf
+    task.execute()
+    
+    # Download the resulting .pdf to the desired output path
+    filename = task.download()
+    target_dir = os.path.join(os.getcwd(), 'static', 'sunlok')
+    filename_without_ext, file_ext = os.path.splitext(filename)
+    current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    new_filename = f"SUNLOK_WHOLESALES_{current_time}{file_ext}"
+    new_target_file_path = os.path.join(target_dir, new_filename)
+    shutil.move(os.path.join(os.getcwd(), filename), new_target_file_path)
+    
+    # Optionally, delete the current task to clean up
+    task.delete_current_task()
+    print("deleting task in _convert_docx_to_pdf")
+
+
+    return os.path.join('static', 'sunlok',new_filename)
+
 def createQuotation(connection,effectiveDate:datetime,days: int = 2) -> str :
     document = Document()
 
@@ -507,6 +536,118 @@ def createQuotation(connection,effectiveDate:datetime,days: int = 2) -> str :
     api_key = 'project_public_dd58a2ab023f0c665dc5749a8f0931e0_Pl0dh0a277b8551bb9cdf01e043af64ce0304'
 
     path =  _convert_docx_to_pdf(api_key, docx_file )
+    #print(path)
+
+    #Return a path relative to the static directory
+    return None
+
+def createQuotation_sunlok(connection,effectiveDate:datetime,days: int = 20) -> str :
+    document = Document()
+
+    for paragraph in document.paragraphs:
+    # Set paragraph spacing to single
+        paragraph_format = paragraph.paragraph_format
+        paragraph_format.line_spacing = Pt(0)
+
+    # Set font
+    style = document.styles['Normal']
+    style.font.name = 'GungSeo'
+    style.font.size = Pt(8)
+    style.font.color.rgb = RGBColor(0, 0, 0) 
+    section = document.sections[0]  # Assuming you're changing the first section
+    section.page_height = Mm(297)
+    section.page_width = Mm(210)
+
+    # Optional: Set margins if you want
+    section.top_margin = Inches(0.01)
+    section.bottom_margin = Inches(0.01)
+    section.left_margin = Inches(0.1)
+    section.right_margin = Inches(0.1)
+
+    # Add header
+    header = document.sections[0].header
+
+    # Clear existing paragraphs
+    for section in document.sections:
+    # Set header distance to 0
+        section.header_distance = Pt(0)
+        section.top_margin = Pt(0)
+        # Set footer distance to 0
+        section.footer_distance = Pt(0)
+
+    for paragraph in header.paragraphs:
+        paragraph.clear()
+
+    # Company name, centered
+    company_name_paragraph = header.add_paragraph('新樂食品貿易有限公司')
+    company_name_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    for run in company_name_paragraph.runs:
+        run.font.color.rgb = RGBColor(0, 0, 0)  # Black font
+
+    # Prepare the header text with placeholders for tabs
+    today_date = datetime.today().strftime('%Y-%m-%d')  # Format today's date
+    header_text = (
+        '上水龍豐花園30號地舖|tradeasychain@gmail.com| [落單只能Whatsapp]張小姐 6045 7604/[急事]曾先生 5977 9085\n'
+        '*貨品價格如有更改,恕不另行通告,價格為入倉提貨價,如有疑問請跟營業員聯絡\n'
+        '*本公司順豐冷凍物流服務$1000以上訂單可免去冷運費，冷運費為 $60元',
+        '*本公司對於$5000元以下訂單提供《貨到付款》服務，服務費為訂單總額的3% 由本公司替順豐快運代為收取'
+        '*請提前落<隔夜單>以免提貨出現問題 截單時間為3:00pm\t打印日期：{}'.format(today_date)
+    )
+
+    # Add header text and configure tab stop for print date
+    header_paragraph = header.add_paragraph(header_text)
+    tab_stops = header_paragraph.paragraph_format.tab_stops
+    tab_stop_position = Inches(6.5)  # Adjust based on your document's layout
+    tab_stop = tab_stops.add_tab_stop(tab_stop_position, alignment=WD_TAB_ALIGNMENT.RIGHT)
+
+    # Set all text to black
+    for paragraph in header.paragraphs:
+        for run in paragraph.runs:
+            run.font.color.rgb = RGBColor(0, 0, 0)
+
+
+    df = quotation.getBestQuote_SunLok(connection,effectiveDate,days)
+    df.fillna('', inplace=True)
+    
+    categoryList = _get_unique_categories(df)
+    update_document_with_products(document,df,categoryList)
+    #single spacing
+    for paragraph in document.paragraphs:
+        _set_paragraph_spacing_to_zero(paragraph)
+
+    # Iterate through headers and footers in all sections
+    for section in document.sections:
+        for header in section.header.paragraphs:
+            _set_paragraph_spacing_to_zero(header)
+        for footer in section.footer.paragraphs:
+            _set_paragraph_spacing_to_zero(footer)
+
+    # Iterate through all tables and their cells
+    for table in document.tables:
+        
+        for row in table.rows:
+            for cell in row.cells:
+                for paragraph in cell.paragraphs:
+                    paragraph.style = document.styles['Normal']
+                    _set_paragraph_spacing_to_zero(paragraph)
+    
+    
+
+
+    static_dir = os.path.join(os.getcwd(), 'static', 'sunlok')
+    
+    if not os.path.exists(static_dir):
+        os.makedirs(static_dir)
+
+    pdf_file = os.path.join(os.getcwd(), 'static')
+
+    docx_file = os.path.join(static_dir, 'quotation.docx')
+    document.save(docx_file)
+    pdf_file = os.path.join(static_dir, 'demo')
+
+    api_key = 'project_public_dd58a2ab023f0c665dc5749a8f0931e0_Pl0dh0a277b8551bb9cdf01e043af64ce0304'
+
+    path =  _convert_docx_to_pdf_sunlok(api_key, docx_file )
     #print(path)
 
     #Return a path relative to the static directory
