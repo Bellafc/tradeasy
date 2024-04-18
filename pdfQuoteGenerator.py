@@ -418,7 +418,7 @@ def _convert_docx_to_pdf_sunlok(api_key,input_path) -> str:
     target_dir = os.path.join(os.getcwd(), 'static', 'sunlok')
     filename_without_ext, file_ext = os.path.splitext(filename)
     current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    new_filename = f"SUNLOK_WHOLESALES_{current_time}{file_ext}"
+    new_filename = f"SUNLOK_HOME_WHOLESALES_{current_time}{file_ext}"
     new_target_file_path = os.path.join(target_dir, new_filename)
     shutil.move(os.path.join(os.getcwd(), filename), new_target_file_path)
     
@@ -429,7 +429,7 @@ def _convert_docx_to_pdf_sunlok(api_key,input_path) -> str:
 
     return os.path.join('static', 'sunlok',new_filename)
 
-def createQuotation(connection,effectiveDate:datetime,days: int = 2) -> str :
+def createQuotation(connection,effectiveDate:datetime,days: int = 20) -> str :
     document = Document()
 
     for paragraph in document.paragraphs:
@@ -475,7 +475,7 @@ def createQuotation(connection,effectiveDate:datetime,days: int = 2) -> str :
     # Prepare the header text with placeholders for tabs
     today_date = datetime.today().strftime('%Y-%m-%d')  # Format today's date
     header_text = (
-        '上水龍豐花園30號地舖|tradeasychain@gmail.com| [落單只能Whatsapp]張小姐 6045 7604/[急事]曾先生 5977 9085\n'
+        '上水龍豐花園30號地舖|tradeasychain@gmail.com| [落單只能Whatsapp]張小姐 9633 9786/[急事]曾先生 5977 9085\n'
         '*貨品價格如有更改,恕不另行通告,價格為入倉提貨價,如有疑問請跟營業員聯絡\n'
         '*本公司只提供 <其士倉> 提貨送貨服務 5件起送 HKD$20/件 <其他倉> 10件起送 HKD$20/件\n'
         '*本公司暫不設加工服務\n'
@@ -587,10 +587,10 @@ def createQuotation_sunlok(connection,effectiveDate:datetime,days: int = 20) -> 
     # Prepare the header text with placeholders for tabs
     today_date = datetime.today().strftime('%Y-%m-%d')  # Format today's date
     header_text = (
-        '上水龍豐花園30號地舖|tradeasychain@gmail.com| [落單只能Whatsapp]張小姐 6045 7604/[急事]曾先生 5977 9085\n'
+        '上水龍豐花園30號地舖|tradeasychain@gmail.com| [落單只能Whatsapp]張小姐 9633 9786/[急事]曾先生 5977 9085\n'
         '*貨品價格如有更改,恕不另行通告,價格為入倉提貨價,如有疑問請跟營業員聯絡\n'
-        '*本公司順豐冷凍物流服務$1000以上訂單可免去冷運費，冷運費為 $60元',
-        '*本公司對於$5000元以下訂單提供《貨到付款》服務，服務費為訂單總額的3% 由本公司替順豐快運代為收取'
+        '*本公司順豐冷凍物流服務$1000以上訂單可免去冷運費，冷運費為 $60元\n',
+        '*本公司對於$5000元以下訂單提供《貨到付款》服務，服務費為訂單總額的3% 由本公司替順豐快運代為收取\n'
         '*請提前落<隔夜單>以免提貨出現問題 截單時間為3:00pm\t打印日期：{}'.format(today_date)
     )
 

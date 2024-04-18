@@ -49,8 +49,8 @@ welcome_message = """
 #Quote ID：根據產品編號返回相關的產品詳情。
 #Exit：退出系統
 #Sunlok quote：新樂報價單
-#Sun lok PDF:新樂報價單PDF
-#connect sql: reconnect to sql
+#Sunlok PDF:新樂報價單PDF
+
 
 
 請輸入您希望執行的操作指令：
@@ -259,7 +259,7 @@ def receive_whatsapp_message():
             current_datetime = datetime.now()
             
             try:
-                pdf_path = pdfQuoteGenerator.createQuotation(connection, current_datetime, days=3)
+                pdf_path = pdfQuoteGenerator.createQuotation(connection, current_datetime)
                 msg.body("PDF報價單生成已完成,請輸入‘get quote’查閱報價...")
 
             except Exception as e:
@@ -274,7 +274,7 @@ def receive_whatsapp_message():
 
             except Exception as e:
                 print(f"An error occurred: {e}")
-        elif incoming_msg.upper() == "#Sun lok PDF".upper():
+        elif incoming_msg.upper() == "#Sunlok PDF".upper():
             pdf_path = _find_latest_pdf_directory("static/sunlok")
             resp.message("PDF報價單發送中...請稍候片刻...")
             ngrok_base_url = 'https://b820-54-153-171-62.ngrok-free.app'  # Update with your actual ngrok URL
