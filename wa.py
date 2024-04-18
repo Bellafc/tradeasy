@@ -197,6 +197,22 @@ def safe_str(value, default=""):
 @app.route("/wa", methods=['POST'])
 def receive_whatsapp_message():
     # Extracting the message SID, sender's number, and message body from the request
+    global connection  # Add this line to use the global connection
+    try:
+        # Re-use the existing connection if it's open
+        if not connection.is_connected():
+            connection = mysql.connector.connect(
+                host='quote.c9ac6sewqau0.ap-southeast-2.rds.amazonaws.com',
+                database='quote',
+                user='admin',
+                password='admin123'
+            )
+    except Error as e:
+        print("Error while connecting to MySQL", e)
+
+
+
+
     message_sid = request.form.get('MessageSid', '')
     sender = request.form.get('From', '')
     message_body = request.form.get('Body', '')
@@ -266,21 +282,6 @@ def receive_whatsapp_message():
             print(url) 
             resp.message(url)
             msg.media(url)  
-        elif incoming_msg.upper() == "#connect sql".upper():
-            try:
-                connection = mysql.connector.connect(
-                    host='quote.c9ac6sewqau0.ap-southeast-2.rds.amazonaws.com',
-                    database='quote',
-                    user='admin',
-                    password='admin123'
-                )
-                if connection.is_connected():
-                    db_Info = connection.get_server_info()
-                    print("Connected to MySQL Server version ", db_Info)
-                    resp.message("Connected to MySQL Server version ", db_Info)
-            except Error as e:
-                print("Error while connecting to MySQL", e)
-                resp.message("Error while connecting to MySQL", e)
 
 
 
